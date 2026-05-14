@@ -1,0 +1,149 @@
+.court {
+  position: relative;
+  min-height: 420px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(26, 127, 193, 0.08), rgba(196, 106, 0, 0.08));
+  border: 1px solid rgba(230, 237, 243, 0.08);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+}
+
+.teamHalf {
+  position: relative;
+  padding: 16px;
+}
+
+.teamName,
+.sideLabels {
+  color: #7d8590;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sideLabels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.net {
+  display: grid;
+  place-items: center;
+  min-height: 32px;
+  background: rgba(13, 17, 23, 0.4);
+  border-block: 1px solid rgba(230, 237, 243, 0.08);
+  color: #7d8590;
+  letter-spacing: 0.16em;
+  font-size: 0.75rem;
+}
+
+.player {
+  position: absolute;
+  top: 52%;
+  width: 108px;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  background: transparent;
+  transform: translateY(-50%);
+  transition: left 300ms ease-in-out, right 300ms ease-in-out, transform 300ms ease-in-out, opacity 250ms ease;
+}
+
+.positionOdd {
+  left: 10%;
+}
+
+.positionEven {
+  left: calc(100% - 118px);
+}
+
+.positionCenter {
+  left: calc(50% - 54px);
+}
+
+.playerCircle {
+  width: 88px;
+  min-height: 88px;
+  padding: 12px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: transform 300ms ease-in-out, box-shadow 250ms ease;
+}
+
+.serverBadge {
+  font-size: 0.75rem;
+  color: #e6edf3;
+}
+
+.currentServer .playerCircle {
+  background: var(--team-color, #1a7fc1);
+  color: #fff;
+  box-shadow: 0 0 0 12px rgba(255, 220, 80, 0.15);
+}
+
+.supportingServer {
+  opacity: 0.82;
+}
+
+.supportingServer .playerCircle {
+  background: var(--team-color, #1a7fc1);
+  color: #fff;
+}
+
+.receivingTeam .playerCircle {
+  background: #21262d;
+  color: #e6edf3;
+}
+
+.currentServer,
+.supportingServer {
+  --team-color: #1a7fc1;
+}
+
+.player:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+.teamHalf:last-child .currentServer,
+.teamHalf:last-child .supportingServer {
+  --team-color: #c46a00;
+}
+
+.teamHalf:last-child .supportingServer {
+  opacity: 0.85;
+}
+
+@media (max-width: 640px) {
+  .court {
+    min-height: 360px;
+  }
+
+  .player {
+    width: 96px;
+  }
+
+  .positionOdd {
+    left: 4%;
+  }
+
+  .positionEven {
+    left: calc(100% - 100px);
+  }
+
+  .positionCenter {
+    left: calc(50% - 48px);
+  }
+
+  .playerCircle {
+    width: 72px;
+    min-height: 72px;
+    font-size: 0.8rem;
+  }
+}
