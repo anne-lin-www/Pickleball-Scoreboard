@@ -1,0 +1,57 @@
+.controls {
+  position: sticky;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px;
+  border-radius: 24px;
+  background: rgba(22, 27, 34, 0.96);
+  border: 1px solid rgba(230, 237, 243, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.undoButton,
+.teamAButton,
+.teamBButton,
+.newGameButton {
+  min-height: 56px;
+  border-radius: 18px;
+  color: #fff;
+  font-weight: 600;
+  transition: transform 120ms ease;
+}
+
+.undoButton:active,
+.teamAButton:active,
+.teamBButton:active,
+.newGameButton:active {
+  transform: scale(0.96);
+}
+
+.undoButton {
+  background: transparent;
+  border: 1px solid rgba(230, 237, 243, 0.2);
+  color: #e6edf3;
+}
+
+.teamAButton {
+  background: #1a7fc1;
+}
+
+.teamBButton {
+  background: #c46a00;
+}
+
+.newGameButton {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, #1a7fc1, #c46a00);
+}
+
+@media (max-width: 640px) {
+  .controls {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 10px;
+  }
+}

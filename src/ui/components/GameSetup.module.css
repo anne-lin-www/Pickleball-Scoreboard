@@ -1,0 +1,116 @@
+.setup {
+  width: min(100%, 720px);
+  margin: auto;
+  display: grid;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: #7d8590;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 3rem);
+}
+
+.languageToggle {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: #21262d;
+  color: #e6edf3;
+  border: 1px solid rgba(230, 237, 243, 0.1);
+}
+
+.card {
+  background: rgba(22, 27, 34, 0.94);
+  border: 1px solid rgba(230, 237, 243, 0.08);
+  border-radius: 24px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.segmentedControl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.segment,
+.segmentActive {
+  min-height: 52px;
+  border-radius: 16px;
+  color: #e6edf3;
+  background: #161b22;
+  border: 1px solid rgba(230, 237, 243, 0.06);
+}
+
+.segmentActive {
+  background: linear-gradient(135deg, #1a7fc1, #c46a00);
+}
+
+.fields,
+.settingsRow {
+  display: grid;
+  gap: 12px;
+}
+
+.fields {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.settingsRow {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  color: #7d8590;
+  font-size: 0.875rem;
+}
+
+.field input,
+.field select {
+  min-height: 48px;
+  border-radius: 14px;
+  border: 1px solid rgba(230, 237, 243, 0.08);
+  background: #0d1117;
+  color: #e6edf3;
+  padding: 0 14px;
+}
+
+.toggleRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #e6edf3;
+}
+
+.startButton {
+  min-height: 58px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #1a7fc1, #44a5e0);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 16px 40px rgba(26, 127, 193, 0.25);
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+  }
+}
