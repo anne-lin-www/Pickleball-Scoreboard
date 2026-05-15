@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { getDisplayScore } from '../../core/rules'
 import type { GameState } from '../../core/types'
 import styles from './ScoreDisplay.module.css'
@@ -22,7 +22,10 @@ type Props = {
 }
 
 export function ScoreDisplay({ state, labels, teamLabels }: Props) {
-  const nextDisplay = getDisplayScore(state)
+  const nextDisplay = useMemo(
+    () => getDisplayScore(state),
+    [state.scoreA, state.scoreB, state.servingTeam, state.serverNumber],
+  )
   const [display, setDisplay] = useState(nextDisplay)
   const [fadeState, setFadeState] = useState<'idle' | 'fadeOut' | 'fadeIn'>('idle')
   const [isBouncing, setIsBouncing] = useState(false)

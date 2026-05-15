@@ -2,24 +2,29 @@ import styles from './Controls.module.css'
 
 type Props = {
   gameOver: boolean
+  canHandOut: boolean
   labels: {
     undo: string
     newGame: string
+    handOut: string
   }
   teamLabels: {
     A: string
     B: string
   }
   onNewGame: () => void
+  onHandOut: () => void
   onScore: (team: 'A' | 'B') => void
   onUndo: () => void
 }
 
 export function Controls({
   gameOver,
+  canHandOut,
   labels,
   teamLabels,
   onNewGame,
+  onHandOut,
   onScore,
   onUndo,
 }: Props) {
@@ -38,6 +43,11 @@ export function Controls({
       <button type="button" className={styles.undoButton} onClick={onUndo}>
         ↩ {labels.undo}
       </button>
+      {canHandOut ? (
+        <button type="button" className={styles.undoButton} onClick={onHandOut}>
+          {labels.handOut}
+        </button>
+      ) : null}
       <button type="button" className={styles.teamAButton} onClick={() => onScore('A')}>
         +{teamLabels.A}
       </button>

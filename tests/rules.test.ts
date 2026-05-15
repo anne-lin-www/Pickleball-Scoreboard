@@ -65,6 +65,7 @@ describe('得分規則', () => {
     expect(next.scoreB).toBe(0)
     expect(next.servingTeam).toBe('B')
     expect(next.serverNumber).toBe(1)
+    expect(next.servingPlayerId).toBe('B1')
   })
 
   it('在比賽開始（0-0-2）時，若首發隊失誤：發球權移給對方成為 server 1，且 isFirstServe 變為 false', () => {
@@ -73,9 +74,10 @@ describe('得分規則', () => {
     expect(next.servingTeam).toBe('B')
     expect(next.serverNumber).toBe(1)
     expect(next.isFirstServe).toBe(false)
+    expect(next.servingPlayerId).toBe('B1')
   })
 
-  it('hand-out（server 1 失誤）：同隊繼續發球，serverNumber 從 1 → 2', () => {
+  it('hand-out（server 1 失誤）：同隊繼續，serverNumber 1→2，servingPlayerId 換人', () => {
     const state = createState({
       scoreA: 1,
       servingTeam: 'A',
@@ -172,5 +174,4 @@ describe('比分顯示順序', () => {
     })
   })
 })
-
 

@@ -46,6 +46,8 @@ const isGameState = (value: unknown): value is GameState => {
     typeof state.scoreB === 'number' &&
     isTeam(state.servingTeam) &&
     (state.serverNumber === 1 || state.serverNumber === 2) &&
+    typeof state.servingPlayerId === 'string' &&
+    state.servingPlayerId.length > 0 &&
     Array.isArray(state.players) &&
     state.players.every(isPlayer) &&
     Array.isArray(state.history) &&

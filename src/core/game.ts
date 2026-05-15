@@ -71,9 +71,18 @@ export function scorePoint(state: GameState, scoringTeam: 'A' | 'B'): GameState 
   }
 
   const next = scoreByRules(state, scoringTeam)
+  const players = calculatePositions(next.players, next.scoreA, next.scoreB)
+  const didSideOut = next.servingTeam !== state.servingTeam
+  const servingPlayerId =
+    didSideOut
+      ? players.find(
+          (player) => player.team === next.servingTeam && player.position === 'even',
+        )?.id ?? next.servingPlayerId
+      : next.servingPlayerId
   const resolvedState = {
     ...next,
-    players: calculatePositions(next.players, next.scoreA, next.scoreB),
+    players,
+    servingPlayerId,
   }
   const outcome = checkWinCondition(resolvedState)
 
@@ -91,10 +100,16 @@ export function handOut(state: GameState): GameState {
     return state
   }
 
-  return {
+  const resolvedState = {
     ...next,
     players: calculatePositions(next.players, next.scoreA, next.scoreB),
+  }
+  const outcome = checkWinCondition(resolvedState)
+
+  return {
+    ...resolvedState,
     history: [...state.history, cloneState(state)].slice(-HISTORY_LIMIT),
+    ...outcome,
   }
 }
 
