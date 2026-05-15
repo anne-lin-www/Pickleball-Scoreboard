@@ -1,9 +1,25 @@
 import { describe, expect, it } from 'vitest'
-import { createGame } from '../src/core/game'
+import { createGame, handOut, scorePoint } from '../src/core/game'
 import { calculatePositions, getCourtLayout, getServerPlayer } from '../src/core/rotation'
+import type { GameState } from '../src/core/types'
+
+const createState = (overrides: Partial<GameState> = {}): GameState => {
+  const base = createGame(
+    { mode: 'doubles', winScore: 11, winByTwo: true },
+    { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' },
+  )
+  const merged = { ...base, ...overrides }
+
+  return {
+    ...merged,
+    players:
+      overrides.players ??
+      calculatePositions(base.players, merged.scoreA, merged.scoreB),
+  }
+}
 
 describe('初始位置', () => {
-  it('A1 初始在偶數邊（右側），A2 在奇數邊（左側）', () => {
+  it("A1 初始在 'even'（右側/偶數位），A2 在 'odd'（左側/奇數位）", () => {
     const state = createGame(
       { mode: 'doubles', winScore: 11, winByTwo: true },
       { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' },
@@ -11,14 +27,32 @@ describe('初始位置', () => {
 
     expect(state.players.find((player) => player.id === 'A1')?.position).toBe('even')
     expect(state.players.find((player) => player.id === 'A2')?.position).toBe('odd')
+    expect(state.servingPlayerId).toBe('A1')
   })
 
-  it('B1 初始在偶數邊（右側），B2 在奇數邊（左側）', () => {
+  it("B1 初始在 'even'（右側/偶數位），B2 在 'odd'（左側/奇數位）", () => {
     const state = createGame(
       { mode: 'doubles', winScore: 11, winByTwo: true },
       { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' },
     )
 
+    expect(state.players.find((player) => player.id === 'B1')?.position).toBe('even')
+    expect(state.players.find((player) => player.id === 'B2')?.position).toBe('odd')
+    expect(state.servingPlayerId).toBe('A1')
+  })
+
+  it('B 先發開局：B1 是發球員，其他初始站位不變', () => {
+    const state = createGame(
+      { mode: 'doubles', winScore: 11, winByTwo: true },
+      { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' },
+      'B',
+    )
+
+    expect(state.servingTeam).toBe('B')
+    expect(state.servingPlayerId).toBe('B1')
+    expect(state.serverNumber).toBe(2)
+    expect(state.players.find((player) => player.id === 'A1')?.position).toBe('even')
+    expect(state.players.find((player) => player.id === 'A2')?.position).toBe('odd')
     expect(state.players.find((player) => player.id === 'B1')?.position).toBe('even')
     expect(state.players.find((player) => player.id === 'B2')?.position).toBe('odd')
   })
@@ -30,10 +64,11 @@ describe('得分後的位置', () => {
       { mode: 'doubles', winScore: 11, winByTwo: true },
       { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' },
     )
-    const players = calculatePositions(state.players, 1, 0)
+    const next = scorePoint(state, 'A')
 
-    expect(players.find((player) => player.id === 'A1')?.position).toBe('odd')
-    expect(players.find((player) => player.id === 'A2')?.position).toBe('even')
+    expect(next.players.find((player) => player.id === 'A1')?.position).toBe('odd')
+    expect(next.players.find((player) => player.id === 'A2')?.position).toBe('even')
+    expect(next.servingPlayerId).toBe('A1')
   })
 
   it('A 再得分：A1 與 A2 交換回原位', () => {
@@ -41,13 +76,14 @@ describe('得分後的位置', () => {
       { mode: 'doubles', winScore: 11, winByTwo: true },
       { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' },
     )
-    const players = calculatePositions(state.players, 2, 0)
+    const next = scorePoint(scorePoint(state, 'A'), 'A')
 
-    expect(players.find((player) => player.id === 'A1')?.position).toBe('even')
-    expect(players.find((player) => player.id === 'A2')?.position).toBe('odd')
+    expect(next.players.find((player) => player.id === 'A1')?.position).toBe('even')
+    expect(next.players.find((player) => player.id === 'A2')?.position).toBe('odd')
+    expect(next.servingPlayerId).toBe('A1')
   })
 
-  it('B 得分：B 與 A 的位置皆不變', () => {
+  it('A 失誤（side-out）：雙方站位不變，因兩隊 score 均未變動', () => {
     const state = createGame(
       { mode: 'doubles', winScore: 11, winByTwo: true },
       { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' },
@@ -58,6 +94,29 @@ describe('得分後的位置', () => {
     expect(players.find((player) => player.id === 'A2')?.position).toBe('odd')
     expect(players.find((player) => player.id === 'B1')?.position).toBe('even')
     expect(players.find((player) => player.id === 'B2')?.position).toBe('odd')
+  })
+
+  it('A 得分後，getServerPlayer 仍回傳 A1（換位後繼續發球）', () => {
+    const state = createGame(
+      { mode: 'doubles', winScore: 11, winByTwo: true },
+      { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' },
+    )
+    const next = scorePoint(state, 'A')
+
+    expect(getServerPlayer(next).id).toBe('A1')
+  })
+
+  it('hand-out 後，getServerPlayer 回傳 A2', () => {
+    const state = createState({
+      scoreA: 1,
+      servingTeam: 'A',
+      serverNumber: 1,
+      isFirstServe: false,
+      servingPlayerId: 'A1',
+    })
+    const next = handOut(state)
+
+    expect(getServerPlayer(next).id).toBe('A2')
   })
 })
 
@@ -110,8 +169,9 @@ describe('場上佈局', () => {
 
     expect(layout.topLeft?.id).toBe('A2')
     expect(layout.topRight?.id).toBe('A1')
-    expect(layout.bottomLeft?.id).toBe('B2')
-    expect(layout.bottomRight?.id).toBe('B1')
+    // B 面向上方，B 的右側（even）在圖的左側
+    expect(layout.bottomLeft?.id).toBe('B1')
+    expect(layout.bottomRight?.id).toBe('B2')
   })
 
   it('getServerPlayer 回傳正確的發球者', () => {

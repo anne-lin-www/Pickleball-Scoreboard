@@ -36,6 +36,7 @@ describe('遊戲狀態機', () => {
     expect(next.history[0]).toEqual(state)
     expect(next.players.find((player) => player.id === 'A1')?.position).toBe('odd')
     expect(next.players.find((player) => player.id === 'A2')?.position).toBe('even')
+    expect(next.servingPlayerId).toBe('A1')
   })
 
   it('限制歷史紀錄深度為 50', () => {
@@ -68,5 +69,6 @@ describe('遊戲狀態機', () => {
     expect(reset.settings).toEqual(state.settings)
     expect(reset.players.map((player) => player.name)).toEqual(['Anne', 'Lin', 'Chris', 'Pat'])
     expect(reset.players.find((player) => player.id === 'A1')?.position).toBe('even')
+    expect(reset.servingPlayerId).toBe('A1')
   })
 })
