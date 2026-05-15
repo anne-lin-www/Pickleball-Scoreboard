@@ -21,6 +21,7 @@ export interface GameState {
   scoreB: number
   servingTeam: Team
   serverNumber: ServerNumber
+  servingPlayerId: string
   players: Player[]
   history: GameState[]
   gameOver: boolean

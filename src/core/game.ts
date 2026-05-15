@@ -1,6 +1,6 @@
 import { calculatePositions } from './rotation'
-import { checkWinCondition, scorePoint as scoreByRules } from './rules'
-import type { GameSettings, GameState, Player } from './types'
+import { checkWinCondition, handOut as handOutByRules, scorePoint as scoreByRules } from './rules'
+import type { GameSettings, GameState, Player, Team } from './types'
 
 const HISTORY_LIMIT = 50
 
@@ -42,13 +42,21 @@ const getPlayerNames = (
 export function createGame(
   settings: GameSettings,
   playerNames: { a1: string; a2: string; b1: string; b2: string },
+  startingTeam: Team = 'A',
 ): GameState {
+  const players = createPlayers(settings, playerNames)
+  const servingPlayerId =
+    players.find((player) => player.team === startingTeam && player.position === 'even')?.id ??
+    players[0]?.id ??
+    'A1'
+
   return {
     scoreA: 0,
     scoreB: 0,
-    servingTeam: 'A',
+    servingTeam: startingTeam,
     serverNumber: 2,
-    players: createPlayers(settings, playerNames),
+    servingPlayerId,
+    players,
     history: [],
     gameOver: false,
     winner: null,
@@ -73,6 +81,20 @@ export function scorePoint(state: GameState, scoringTeam: 'A' | 'B'): GameState 
     ...resolvedState,
     history: [...state.history, cloneState(state)].slice(-HISTORY_LIMIT),
     ...outcome,
+  }
+}
+
+export function handOut(state: GameState): GameState {
+  const next = handOutByRules(state)
+
+  if (next === state) {
+    return state
+  }
+
+  return {
+    ...next,
+    players: calculatePositions(next.players, next.scoreA, next.scoreB),
+    history: [...state.history, cloneState(state)].slice(-HISTORY_LIMIT),
   }
 }
 

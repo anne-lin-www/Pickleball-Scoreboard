@@ -39,15 +39,7 @@ export function calculatePositions(
 }
 
 export function getServerPlayer(state: GameState): Player {
-  const servingPlayers = state.players.filter((player) => player.team === state.servingTeam)
-
-  if (state.settings.mode === 'singles') {
-    return servingPlayers[0]!
-  }
-
-  return (
-    servingPlayers.find((player) => player.position === 'even') ?? servingPlayers[0]!
-  )
+  return state.players.find((player) => player.id === state.servingPlayerId) ?? state.players[0]!
 }
 
 export function getCourtLayout(state: GameState): {
@@ -62,7 +54,7 @@ export function getCourtLayout(state: GameState): {
   return {
     topLeft: teamA.find((player) => player.position === 'odd') ?? null,
     topRight: teamA.find((player) => player.position === 'even') ?? null,
-    bottomLeft: teamB.find((player) => player.position === 'odd') ?? null,
-    bottomRight: teamB.find((player) => player.position === 'even') ?? null,
+    bottomLeft: teamB.find((player) => player.position === 'even') ?? null,
+    bottomRight: teamB.find((player) => player.position === 'odd') ?? null,
   }
 }

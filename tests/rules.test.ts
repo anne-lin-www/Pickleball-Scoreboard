@@ -1,15 +1,23 @@
 import { describe, expect, it } from 'vitest'
 import { createGame } from '../src/core/game'
-import { checkWinCondition, getDisplayScore, scorePoint } from '../src/core/rules'
+import { calculatePositions } from '../src/core/rotation'
+import { checkWinCondition, getDisplayScore, handOut, scorePoint } from '../src/core/rules'
 import type { GameState } from '../src/core/types'
 
-const createState = (overrides: Partial<GameState> = {}): GameState => ({
-  ...createGame(
+const createState = (overrides: Partial<GameState> = {}): GameState => {
+  const base = createGame(
     { mode: 'doubles', winScore: 11, winByTwo: true },
     { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' },
-  ),
-  ...overrides,
-})
+  )
+  const merged = { ...base, ...overrides }
+
+  return {
+    ...merged,
+    players:
+      overrides.players ??
+      calculatePositions(base.players, merged.scoreA, merged.scoreB),
+  }
+}
 
 describe('遊戲初始化', () => {
   it('起始為 0-0-2，由 A 隊發球', () => {
@@ -22,6 +30,7 @@ describe('遊戲初始化', () => {
     expect(state.scoreB).toBe(0)
     expect(state.servingTeam).toBe('A')
     expect(state.serverNumber).toBe(2)
+    expect(state.servingPlayerId).toBe('A1')
   })
 
   it('遊戲開始時 isFirstServe（第一次發球標記）為 true', () => {
@@ -42,14 +51,15 @@ describe('得分規則', () => {
     expect(next.servingTeam).toBe('A')
   })
 
-  it('雙打情況下發球隊得分：隊內發球編號切換', () => {
+  it('雙打情況下發球隊得分：serverNumber 不變，servingPlayerId 不變', () => {
     const next = scorePoint(createState(), 'A')
 
-    expect(next.serverNumber).toBe(1)
+    expect(next.serverNumber).toBe(2)
+    expect(next.servingPlayerId).toBe('A1')
   })
 
-  it('發球隊失誤：發球權移給對方，serverNumber 設為 1', () => {
-    const next = scorePoint(createState({ isFirstServe: false, serverNumber: 1 }), 'B')
+  it('發球隊 server 2 失誤：發球權移給對方，serverNumber 設為 1', () => {
+    const next = scorePoint(createState({ isFirstServe: false, serverNumber: 2 }), 'B')
 
     expect(next.scoreA).toBe(0)
     expect(next.scoreB).toBe(0)
@@ -63,6 +73,49 @@ describe('得分規則', () => {
     expect(next.servingTeam).toBe('B')
     expect(next.serverNumber).toBe(1)
     expect(next.isFirstServe).toBe(false)
+  })
+
+  it('hand-out（server 1 失誤）：同隊繼續發球，serverNumber 從 1 → 2', () => {
+    const state = createState({
+      scoreA: 1,
+      servingTeam: 'A',
+      serverNumber: 1,
+      isFirstServe: false,
+      servingPlayerId: 'A1',
+    })
+    const next = handOut(state)
+
+    expect(next.scoreA).toBe(state.scoreA)
+    expect(next.scoreB).toBe(state.scoreB)
+    expect(next.servingTeam).toBe('A')
+    expect(next.serverNumber).toBe(2)
+    expect(next.servingPlayerId).toBe('A2')
+    expect(next.players).toEqual(state.players)
+  })
+
+  it('hand-out 後 server 2 失誤 → side-out', () => {
+    const state = createState({
+      servingTeam: 'A',
+      serverNumber: 2,
+      isFirstServe: false,
+    })
+    const next = scorePoint(state, 'B')
+
+    expect(next.servingTeam).toBe('B')
+    expect(next.serverNumber).toBe(1)
+    expect(next.servingPlayerId).toBe('B1')
+  })
+
+  it('hand-out 的先決條件：isFirstServe=true 時不可執行', () => {
+    const state = createState()
+
+    expect(handOut(state)).toBe(state)
+  })
+
+  it('hand-out 的先決條件：serverNumber=2 時不可執行', () => {
+    const state = createState({ serverNumber: 2, isFirstServe: false })
+
+    expect(handOut(state)).toBe(state)
   })
 })
 
@@ -119,6 +172,5 @@ describe('比分顯示順序', () => {
     })
   })
 })
-
 
 

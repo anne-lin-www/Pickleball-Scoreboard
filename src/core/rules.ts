@@ -9,26 +9,52 @@ export function scorePoint(state: GameState, scoringTeam: Team): GameState {
   }
 
   if (scoringTeam === state.servingTeam) {
-    const serverNumber: ServerNumber =
-      state.settings.mode === 'doubles'
-        ? state.serverNumber === 1
-          ? 2
-          : 1
-        : state.serverNumber
-
     return {
       ...state,
       scoreA: scoringTeam === 'A' ? state.scoreA + 1 : state.scoreA,
       scoreB: scoringTeam === 'B' ? state.scoreB + 1 : state.scoreB,
-      serverNumber,
     }
   }
 
+  if (state.settings.mode === 'doubles' && !state.isFirstServe && state.serverNumber === 1) {
+    return handOut(state)
+  }
+
+  const servingTeam = scoringTeam
+  const servingPlayerId =
+    state.players.find((player) => player.team === servingTeam && player.position === 'even')?.id ??
+    state.servingPlayerId
+
   return {
     ...state,
-    servingTeam: scoringTeam,
+    servingTeam,
     serverNumber: 1,
+    servingPlayerId,
     isFirstServe: false,
+  }
+}
+
+export function handOut(state: GameState): GameState {
+  if (
+    state.gameOver ||
+    state.isFirstServe ||
+    state.serverNumber !== 1 ||
+    state.settings.mode !== 'doubles'
+  ) {
+    return state
+  }
+
+  const servingPlayerId =
+    state.players.find(
+      (player) => player.team === state.servingTeam && player.id !== state.servingPlayerId,
+    )?.id ?? state.servingPlayerId
+
+  const serverNumber: ServerNumber = 2
+
+  return {
+    ...state,
+    serverNumber,
+    servingPlayerId,
   }
 }
 
