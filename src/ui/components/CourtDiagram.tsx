@@ -10,6 +10,8 @@ type TeamLabels = {
 type Props = {
   labels: {
     server: string
+    sideLeft: string
+    sideRight: string
   }
   state: GameState
   teamLabels: TeamLabels
@@ -93,9 +95,9 @@ export function CourtDiagram({ labels, state, teamLabels, onScore }: Props) {
     <section className={styles.court}>
       <div className={styles.teamHalf}>
         <div className={styles.sideLabels}>
-          <span>odd</span>
+          <span>{labels.sideLeft}</span>
           <span>{teamLabels.A}</span>
-          <span>even</span>
+          <span>{labels.sideRight}</span>
         </div>
         {renderPlayer(layout.topLeft, 'odd')}
         {renderPlayer(layout.topRight, 'even')}
@@ -105,9 +107,9 @@ export function CourtDiagram({ labels, state, teamLabels, onScore }: Props) {
       </div>
       <div className={styles.teamHalf}>
         <div className={styles.sideLabels}>
-          <span>even</span>
+          <span>{labels.sideLeft}</span>
           <span>{teamLabels.B}</span>
-          <span>odd</span>
+          <span>{labels.sideRight}</span>
         </div>
         {renderPlayer(layout.bottomLeft, 'odd')}
         {renderPlayer(layout.bottomRight, 'even')}

@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react'
-import type { GameSettings } from '../../core/types'
+import type { GameSettings, Team } from '../../core/types'
 import styles from './GameSetup.module.css'
 
 type SetupFormState = {
@@ -20,6 +20,8 @@ type Labels = {
   teamB: string
   playerName: string
   language: string
+  startingTeam: string
+  teamServesFirst: string
 }
 
 type Props = {
@@ -29,6 +31,7 @@ type Props = {
   onStart: (
     settings: GameSettings,
     playerNames: { a1: string; a2: string; b1: string; b2: string },
+    startingTeam: Team,
   ) => void
 }
 
@@ -43,6 +46,7 @@ export function GameSetup({ language, labels, onLanguageChange, onStart }: Props
   const [winScoreOption, setWinScoreOption] = useState<'11' | '15' | '21' | 'custom'>('11')
   const [customWinScore, setCustomWinScore] = useState('11')
   const [winByTwo, setWinByTwo] = useState(true)
+  const [startingTeam, setStartingTeam] = useState<Team>('A')
 
   const resolvedWinScore = useMemo(() => {
     if (winScoreOption === 'custom') {
@@ -83,6 +87,7 @@ export function GameSetup({ language, labels, onLanguageChange, onStart }: Props
         b1: players.b1.trim() || DEFAULT_PLAYERS[mode].b1,
         b2: mode === 'doubles' ? players.b2.trim() || 'B2' : '',
       },
+      startingTeam,
     )
   }
 
@@ -186,6 +191,21 @@ export function GameSetup({ language, labels, onLanguageChange, onStart }: Props
             </label>
           ) : null}
         </div>
+
+        <label className={styles.field}>
+          <span>{labels.startingTeam}</span>
+          <select
+            value={startingTeam}
+            onChange={(event) => setStartingTeam(event.target.value as Team)}
+          >
+            <option value="A">
+              {labels.teamA} {labels.teamServesFirst}
+            </option>
+            <option value="B">
+              {labels.teamB} {labels.teamServesFirst}
+            </option>
+          </select>
+        </label>
 
         <label className={styles.toggleRow}>
           <input

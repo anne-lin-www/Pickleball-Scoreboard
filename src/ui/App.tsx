@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { createGame, scorePoint, undoLastPoint } from '../core/game'
+import { createGame, handOut, scorePoint, undoLastPoint } from '../core/game'
 import type { GameState } from '../core/types'
 import { en } from '../i18n/en'
 import { zhTW } from '../i18n/zh-TW'
@@ -135,10 +135,10 @@ function App() {
           language={language}
           labels={labels}
           onLanguageChange={setLanguage}
-          onStart={(settings, playerNames) => {
+          onStart={(settings, playerNames, startingTeam) => {
             clearGameState()
             setResumeCandidate(null)
-            setGame(createGame(settings, playerNames))
+            setGame(createGame(settings, playerNames, startingTeam))
           }}
         />
       </main>
@@ -174,9 +174,16 @@ function App() {
           onScore={(team) => setGame((current) => (current ? scorePoint(current, team) : current))}
         />
         <Controls
+          canHandOut={
+            !game.gameOver &&
+            game.settings.mode === 'doubles' &&
+            !game.isFirstServe &&
+            game.serverNumber === 1
+          }
           gameOver={game.gameOver}
           labels={labels}
           teamLabels={teamLabels}
+          onHandOut={() => setGame((current) => (current ? handOut(current) : current))}
           onNewGame={startNewGame}
           onScore={(team) => setGame((current) => (current ? scorePoint(current, team) : current))}
           onUndo={() => setGame((current) => (current ? undoLastPoint(current) : current))}
