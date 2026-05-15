@@ -9,6 +9,14 @@ npm install
 npm run dev
 ```
 
+Recommended Node version (for development and tests)
+
+```bash
+# Node 20 is recommended (example: 20.19.0)
+nvm use 20.19.0
+npm install
+```
+
 ## Tests
 
 ```bash

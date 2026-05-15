@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createGame, resetGame, scorePoint, undoLastPoint } from '../src/core/game'
 
-describe('Undo', () => {
-  it('undoLastPoint restores previous state', () => {
+describe('復原', () => {
+  it('undoLastPoint 應還原到先前的遊戲狀態', () => {
     const state = createGame(
       { mode: 'doubles', winScore: 11, winByTwo: true },
       { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' },
@@ -13,7 +13,7 @@ describe('Undo', () => {
     expect(undoLastPoint(scored)).toEqual(state)
   })
 
-  it('undo at game start does nothing (no history)', () => {
+  it('遊戲開始時執行 undo 不應改變狀態（無歷史紀錄）', () => {
     const state = createGame(
       { mode: 'doubles', winScore: 11, winByTwo: true },
       { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' },
@@ -23,8 +23,8 @@ describe('Undo', () => {
   })
 })
 
-describe('Game state machine', () => {
-  it('appends current state to history before updating and recalculates positions', () => {
+describe('遊戲狀態機', () => {
+  it('在更新前將當前狀態加入歷史，並重新計算位置', () => {
     const state = createGame(
       { mode: 'doubles', winScore: 11, winByTwo: true },
       { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' },
@@ -38,7 +38,7 @@ describe('Game state machine', () => {
     expect(next.players.find((player) => player.id === 'A2')?.position).toBe('even')
   })
 
-  it('limits history depth to 50 states', () => {
+  it('限制歷史紀錄深度為 50', () => {
     let state = createGame(
       { mode: 'doubles', winScore: 101, winByTwo: false },
       { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' },
@@ -51,7 +51,7 @@ describe('Game state machine', () => {
     expect(state.history).toHaveLength(50)
   })
 
-  it('resetGame resets scores and positions, keeps settings and player names', () => {
+  it('resetGame 會重設比分與位置，但保留設定與玩家名稱', () => {
     const state = scorePoint(
       createGame(
         { mode: 'doubles', winScore: 15, winByTwo: true },
