@@ -21,11 +21,15 @@ export function scorePoint(state: GameState, scoringTeam: Team): GameState {
   }
 
   const servingTeam = scoringTeam
+  const servingPlayerId =
+    state.players.find((player) => player.team === servingTeam && player.position === 'even')?.id ??
+    state.servingPlayerId
 
   return {
     ...state,
     servingTeam,
     serverNumber: 1,
+    servingPlayerId,
     isFirstServe: false,
   }
 }

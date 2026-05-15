@@ -24,7 +24,7 @@ type Props = {
 export function ScoreDisplay({ state, labels, teamLabels }: Props) {
   const nextDisplay = useMemo(
     () => getDisplayScore(state),
-    [state.scoreA, state.scoreB, state.servingTeam, state.serverNumber],
+    [state],
   )
   const [display, setDisplay] = useState(nextDisplay)
   const [fadeState, setFadeState] = useState<'idle' | 'fadeOut' | 'fadeIn'>('idle')
