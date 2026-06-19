@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Test coverage
+coverage/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Vite
+*.local
+
+# Spectra runtime
+.spectra/
+openspec/.vector-search.db*
+
+# Claude Code — auto-synced skills (not user-authored)
+.claude/skills/
+
+# Agent skills/workflows — auto-synced
+.agent/
+
+# docs
+docs/
+
+# JetBrains
+.idea/

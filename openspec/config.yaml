@@ -1,0 +1,22 @@
+schema: spec-driven
+
+context: |
+  # Pickleball Scoreboard
+
+  **專案定位**: 網頁版匹克球記分板，瀏覽器直接訪問，支援 RWD，適用各裝置，手機觸控點擊優先
+
+  **Tech Stack**: React + Vite, TypeScript strict mode, Vitest
+
+  **開發原則**:
+  - 核心演算法邏輯以 TDD (Kent Beck) 方式開發，測試先行
+  - Strong typing，禁用 `any`
+  - Spec-Driven：新功能或重大修改前先 /spectra-propose
+
+rules:
+  proposal:
+    - 必須包含 Non-goals 段落
+    - 涉及演算法或狀態變更需附 pseudocode 或狀態轉移表
+    - 說明對 RWD / 觸控體驗的影響（若有）
+  tasks:
+    - 演算法任務切成 1-2 小時（TDD 友善，每個 task 含測試案例作為 acceptance criteria）
+    - UI 任務切成 2-3 小時（以 component 為單位）
