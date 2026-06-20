@@ -39,12 +39,10 @@ function PlayerCell({ player, isServer }: { player: PlayerView | null; isServer:
   )
 }
 
-function getIsServer(player: PlayerView, team: TeamView, isServing: boolean, serverNumber: 1 | 2): boolean {
+function getIsServer(player: PlayerView, team: TeamView, isServing: boolean, servingPlayerId: string): boolean {
   if (!isServing) return false
   if (team.players.length === 1) return true
-  // doubles: _P1 = server #1, _P2 = server #2
-  const isP1 = player.id.endsWith('_P1')
-  return serverNumber === 1 ? isP1 : !isP1
+  return player.id === servingPlayerId
 }
 
 function CourtHalf({
@@ -52,7 +50,7 @@ function CourtHalf({
   isTopTeam,
   isTopTeamA,
   servingTeamId,
-  serverNumber,
+  servingPlayerId,
   tapEnabled,
   onTap,
 }: {
@@ -60,7 +58,7 @@ function CourtHalf({
   isTopTeam: boolean
   isTopTeamA: boolean
   servingTeamId: TeamId
-  serverNumber: 1 | 2
+  servingPlayerId: string
   tapEnabled: boolean
   onTap: () => void
 }) {
@@ -81,13 +79,13 @@ function CourtHalf({
       <div className="flex-1 flex items-center justify-center">
         <PlayerCell
           player={screenLeft}
-          isServer={screenLeft ? getIsServer(screenLeft, team, isServing, serverNumber) : false}
+          isServer={screenLeft ? getIsServer(screenLeft, team, isServing, servingPlayerId) : false}
         />
       </div>
       <div className="flex-1 flex items-center justify-center">
         <PlayerCell
           player={screenRight}
-          isServer={screenRight ? getIsServer(screenRight, team, isServing, serverNumber) : false}
+          isServer={screenRight ? getIsServer(screenRight, team, isServing, servingPlayerId) : false}
         />
       </div>
     </div>
@@ -98,7 +96,7 @@ export default function GameScreen({ game, config, onReset }: Props) {
   const { t } = useLocale()
   const [viewModel, setViewModel] = useState(() => deriveViewModel(game, config))
 
-  const { topTeam, bottomTeam, servingTeamId, serverNumber } = viewModel
+  const { topTeam, bottomTeam, servingTeamId, serverNumber, servingPlayerId } = viewModel
   const isTopTeamA = topTeam.id === 'TEAM_A'
   const servingTeam = servingTeamId === topTeam.id ? topTeam : bottomTeam
   const receivingTeam = servingTeamId === topTeam.id ? bottomTeam : topTeam
@@ -141,7 +139,7 @@ export default function GameScreen({ game, config, onReset }: Props) {
           isTopTeam={true}
           isTopTeamA={isTopTeamA}
           servingTeamId={servingTeamId}
-          serverNumber={serverNumber}
+          servingPlayerId={servingPlayerId}
           tapEnabled={tapEnabled}
           onTap={() => handleScore(topTeam.id)}
         />
@@ -158,7 +156,7 @@ export default function GameScreen({ game, config, onReset }: Props) {
           isTopTeam={false}
           isTopTeamA={isTopTeamA}
           servingTeamId={servingTeamId}
-          serverNumber={serverNumber}
+          servingPlayerId={servingPlayerId}
           tapEnabled={tapEnabled}
           onTap={() => handleScore(bottomTeam.id)}
         />

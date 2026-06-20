@@ -1,10 +1,4 @@
-# game-view-model Specification
-
-## Purpose
-
-TBD - created by archiving change 'ui-game-screen-wiring'. Update Purpose after archive.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Unified view model derivation
 
@@ -28,51 +22,3 @@ The `GameViewModel` interface SHALL include a `servingPlayerId: PlayerId` field 
 
 - **WHEN** a Singles game is in progress
 - **THEN** `deriveViewModel` SHALL produce a GameViewModel where `servingPlayerId` equals the PlayerId of the currently serving player
-
-
-<!-- @trace
-source: fix-ui-preview-bugs
-updated: 2026-06-20
-code:
-  - src/core/gameViewModel.ts
-  - src/screens/SetupScreen.tsx
-  - design-preview-B.html
-  - src/screens/GameScreen.tsx
-  - src/core/doubles/DoublesGame.ts
-  - design-preview-A.html
-tests:
-  - src/core/doubles/DoublesGame.test.ts
--->
-
----
-### Requirement: Winner name resolution
-
-When a game is in FINISHED status, `deriveViewModel` SHALL resolve the winner's display name from `SetupConfig`.
-
-#### Scenario: Doubles winner name
-
-- **WHEN** `game.getStatus() === 'FINISHED'` and `game.getWinner() === 'TEAM_A'`
-- **THEN** `winnerName` SHALL equal `config.teamAName`
-
-#### Scenario: Singles winner name
-
-- **WHEN** `game.getStatus() === 'FINISHED'` and `game.getWinner()` is a PlayerId starting with `'TEAM_B_'`
-- **THEN** `winnerName` SHALL equal `config.teamBPlayer1`
-
-<!-- @trace
-source: ui-game-screen-wiring
-updated: 2026-06-20
-code:
-  - src/core/gameInit.ts
-  - design-preview-B.html
-  - src/App.tsx
-  - src/core/gameViewModel.ts
-  - design-preview-A.html
-  - src/screens/GameScreen.tsx
-  - src/i18n/strings.ts
-  - src/mock/gameState.ts
-  - src/screens/SetupScreen.tsx
-tests:
-  - src/core/gameInit.test.ts
-  - src/core/gameViewModel.test.ts
--->

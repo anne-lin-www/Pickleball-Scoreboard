@@ -9,6 +9,7 @@ export interface IDoublesScoreboard {
   getScoreCall(): string
   getServingTeam(): TeamId
   getServerNumber(): 1 | 2
+  getServingPlayerId(): PlayerId
   getTeamPositions(id: TeamId): Record<PlayerId, CourtSide>
   getStatus(): GameStatus
   getWinner(): TeamId | null
@@ -25,6 +26,7 @@ interface DoublesTeamState {
   readonly id: TeamId
   score: number
   serverNumber: 1 | 2
+  currentServingPlayerId: PlayerId
   players: [Player, Player]
 }
 
@@ -46,6 +48,7 @@ function makeTeam(id: TeamId): DoublesTeamState {
     id,
     score: 0,
     serverNumber: 2,
+    currentServingPlayerId: `${id}_P1`,
     players: [makePlayer(`${id}_P1`, true), makePlayer(`${id}_P2`, false)],
   }
 }
@@ -55,6 +58,7 @@ function cloneTeam(t: DoublesTeamState): DoublesTeamState {
     id: t.id,
     score: t.score,
     serverNumber: t.serverNumber,
+    currentServingPlayerId: t.currentServingPlayerId,
     players: [
       { ...t.players[0] },
       { ...t.players[1] },
@@ -74,7 +78,7 @@ function switchSides(team: DoublesTeamState): void {
 
 function resetToFirstServer(team: DoublesTeamState): void {
   team.serverNumber = 1
-  // right-side player becomes server 1 (already reflected by currentSide)
+  team.currentServingPlayerId = rightPlayer(team).id
 }
 
 function checkWin(scoring: DoublesTeamState, other: DoublesTeamState): boolean {
@@ -157,6 +161,8 @@ export class DoublesGame implements IDoublesScoreboard {
         this.isFirstServe = false
         this.sideOut()
       } else if (serving.serverNumber === 1) {
+        // server #2 is the partner of server #1
+        serving.currentServingPlayerId = serving.players.find(p => p.id !== serving.currentServingPlayerId)!.id
         serving.serverNumber = 2
       } else {
         this.sideOut()
@@ -191,6 +197,14 @@ export class DoublesGame implements IDoublesScoreboard {
 
   getServerNumber(): 1 | 2 {
     return this.servingTeam.serverNumber
+  }
+
+  getServingPlayerId(): PlayerId {
+    // First-serve exception: anchor player (isStartingRight) serves regardless of serverNumber
+    if (this.isFirstServe) {
+      return this.servingTeam.players.find(p => p.isStartingRight)!.id
+    }
+    return this.servingTeam.currentServingPlayerId
   }
 
   getTeamPositions(id: TeamId): Record<PlayerId, CourtSide> {

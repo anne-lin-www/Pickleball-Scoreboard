@@ -139,61 +139,36 @@ code:
 ---
 ### Requirement: Serving player indicator
 
-The Game screen SHALL mark the current server with a visible indicator (●) next to their name on the court.
+The Game screen SHALL mark the current server with a visible indicator (●) next to their name on the court. The current server SHALL be determined by `GameViewModel.servingPlayerId` — the player whose `id` equals `servingPlayerId` is the server. This correctly handles the doubles first-server exception (0-0-2 start), server #1 → #2 transitions, and mid-serve side switches.
 
-#### Scenario: Server marked on court
+#### Scenario: Server marked on court — first-server exception (0-0-2)
 
-- **WHEN** a player is the current server
-- **THEN** a ● symbol SHALL appear adjacent to that player's name on the court display
+- **WHEN** a Doubles game starts at score 0-0-2
+- **THEN** the anchor player (TEAM_A_P1 or TEAM_B_P1 per the first serving team) SHALL have a ● indicator, as they are the first server under the first-server exception
+
+#### Scenario: Server marked on court — server #2 after fault
+
+- **WHEN** server #1 faults and the server number advances to 2
+- **THEN** the partner player (who was server #2 in waiting) SHALL have a ● indicator
 
 #### Scenario: Non-servers unmarked
 
 - **WHEN** a player is not the current server
 - **THEN** no ● indicator SHALL appear next to their name
 
-<!-- @trace
-source: ui-layout-preview
-updated: 2026-06-20
--->
-
 
 <!-- @trace
-source: ui-layout-preview
+source: fix-ui-preview-bugs
 updated: 2026-06-20
 code:
-  - index.html
-  - screenshot-game-375.png
-  - src/screens/GameScreen.tsx
-  - postcss.config.ts
-  - .playwright-mcp/page-2026-06-20T07-29-23-513Z.yml
-  - src/App.tsx
-  - src/screens/GameOverScreen.tsx
-  - screenshot-rematch-back.png
-  - src/index.css
-  - .playwright-mcp/page-2026-06-20T07-36-04-849Z.yml
-  - .playwright-mcp/page-2026-06-20T07-33-50-200Z.yml
-  - .playwright-mcp/page-2026-06-20T07-35-10-110Z.yml
-  - src/mock/gameState.ts
-  - screenshot-game-375-fixed.png
-  - .playwright-mcp/page-2026-06-20T07-35-15-864Z.yml
-  - screenshot-game-375-v2.png
-  - screenshot-setup-375.png
-  - .playwright-mcp/page-2026-06-20T07-33-54-806Z.yml
-  - package.json
-  - .playwright-mcp/page-2026-06-20T07-31-44-398Z.yml
-  - .playwright-mcp/page-2026-06-20T07-28-56-666Z.yml
-  - .playwright-mcp/page-2026-06-20T07-25-42-720Z.yml
-  - screenshot-game-768.png
+  - src/core/gameViewModel.ts
   - src/screens/SetupScreen.tsx
-  - screenshot-game-768-v2.png
-  - src/vite-env.d.ts
-  - tsconfig.json
-  - vite.config.ts
-  - .playwright-mcp/page-2026-06-20T07-31-39-557Z.yml
-  - screenshot-gameover.png
-  - tailwind.config.ts
-  - .playwright-mcp/page-2026-06-20T07-35-54-823Z.yml
-  - src/main.tsx
+  - design-preview-B.html
+  - src/screens/GameScreen.tsx
+  - src/core/doubles/DoublesGame.ts
+  - design-preview-A.html
+tests:
+  - src/core/doubles/DoublesGame.test.ts
 -->
 
 ---

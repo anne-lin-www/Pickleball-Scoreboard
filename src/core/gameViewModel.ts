@@ -21,6 +21,7 @@ export interface GameViewModel {
   bottomTeam: TeamView
   servingTeamId: TeamId
   serverNumber: 1 | 2
+  servingPlayerId: PlayerId
   status: GameStatus
   winnerName: string | null
   mode: 'doubles' | 'singles'
@@ -100,6 +101,7 @@ export function deriveViewModel(
       bottomTeam,
       servingTeamId,
       serverNumber,
+      servingPlayerId: doubles.getServingPlayerId(),
       status,
       winnerName: resolveWinnerName(doubles.getWinner(), config, 'doubles'),
       mode: 'doubles',
@@ -134,6 +136,7 @@ export function deriveViewModel(
       bottomTeam,
       servingTeamId,
       serverNumber: 1,
+      servingPlayerId,
       status,
       winnerName: resolveWinnerName(singles.getWinner(), config, 'singles'),
       mode: 'singles',

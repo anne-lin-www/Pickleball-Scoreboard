@@ -189,13 +189,13 @@ export default function SetupScreen({ onStart }: Props) {
             </label>
             <div className="join w-full">
               <button
-                className={`btn join-item flex-1 ${gamesCount === 1 ? 'btn-neutral' : 'btn-outline'}`}
+                className={`btn join-item flex-1 ${gamesCount === 1 ? 'btn-primary' : 'btn-outline'}`}
                 onClick={() => setGamesCount(1)}
               >
                 {t('oneGame')}
               </button>
               <button
-                className={`btn join-item flex-1 ${gamesCount === 3 ? 'btn-neutral' : 'btn-outline'}`}
+                className={`btn join-item flex-1 ${gamesCount === 3 ? 'btn-primary' : 'btn-outline'}`}
                 onClick={() => setGamesCount(3)}
               >
                 {t('bestOfThree')}
