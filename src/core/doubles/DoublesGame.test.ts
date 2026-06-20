@@ -26,6 +26,17 @@ describe('DoublesGame — initial game state (D1.1)', () => {
     const game = new DoublesGame('TEAM_A')
     expect(game.getServingTeam()).toBe('TEAM_A')
   })
+
+  it('P1 is on LEFT and P2 is on RIGHT at start — P2 is 2位 (0-0-2)', () => {
+    const game = new DoublesGame('TEAM_A')
+    expect(game.getTeamPositions('TEAM_A')).toEqual({ TEAM_A_P1: 'LEFT', TEAM_A_P2: 'RIGHT' })
+    expect(game.getTeamPositions('TEAM_B')).toEqual({ TEAM_B_P1: 'LEFT', TEAM_B_P2: 'RIGHT' })
+  })
+
+  it('initial server at 0-0-2 is P2 (right side, 2位)', () => {
+    const game = new DoublesGame('TEAM_A')
+    expect(game.getServingPlayerId()).toBe('TEAM_A_P2')
+  })
 })
 
 describe('DoublesGame — first-server exception on initial Side Out (D1.2)', () => {
@@ -301,13 +312,13 @@ describe('DoublesGame — reset match (D6)', () => {
     expect(game.getScoreCall()).toBe('0-0-1')
   })
 
-  it('reset restores player positions — anchor on RIGHT', () => {
+  it('reset restores player positions — P2 (2位) on RIGHT, P1 (1位) on LEFT', () => {
     const game = new DoublesGame('TEAM_A')
     game.winRally('TEAM_A') // players swapped
     game.reset()
     const positions = game.getTeamPositions('TEAM_A')
-    expect(positions['TEAM_A_P1']).toBe('RIGHT') // anchor
-    expect(positions['TEAM_A_P2']).toBe('LEFT')  // non-anchor
+    expect(positions['TEAM_A_P1']).toBe('LEFT')  // 1位, left
+    expect(positions['TEAM_A_P2']).toBe('RIGHT') // 2位, anchor, right
   })
 
   it('reset is idempotent — multiple resets leave same initial state', () => {
@@ -336,58 +347,58 @@ describe('DoublesGame — reset match (D6)', () => {
 })
 
 describe('DoublesGame — getServingPlayerId', () => {
-  it('game start (0-0-2): anchor (TEAM_A_P1) is the server', () => {
+  it('game start (0-0-2): P2 (2位, right side) is the server', () => {
     const game = new DoublesGame('TEAM_A')
-    expect(game.getServingPlayerId()).toBe('TEAM_A_P1')
+    expect(game.getServingPlayerId()).toBe('TEAM_A_P2')
   })
 
-  it('after TEAM_A scores once (1-0-2): TEAM_A_P1 is still server (switched to LEFT)', () => {
+  it('after TEAM_A scores once (1-0-2): TEAM_A_P2 is still server (switched to LEFT)', () => {
     const game = new DoublesGame('TEAM_A')
     game.winRally('TEAM_A')
     expect(game.getScoreCall()).toBe('1-0-2')
-    expect(game.getServingPlayerId()).toBe('TEAM_A_P1')
+    expect(game.getServingPlayerId()).toBe('TEAM_A_P2')
   })
 
-  it('after first side-out (TEAM_B serves server 1): TEAM_B_P1 is server', () => {
+  it('after first side-out (TEAM_B serves server 1): TEAM_B_P2 is server', () => {
     const game = new DoublesGame('TEAM_A')
     game.winRally('TEAM_B') // first-serve exception → TEAM_B server 1
-    expect(game.getServingPlayerId()).toBe('TEAM_B_P1')
-  })
-
-  it('after TEAM_B scores as server 1: TEAM_B_P1 still server (switched sides)', () => {
-    const game = new DoublesGame('TEAM_A')
-    game.winRally('TEAM_B') // side-out → TEAM_B server 1
-    game.winRally('TEAM_B') // TEAM_B scores
-    expect(game.getServingPlayerId()).toBe('TEAM_B_P1')
-  })
-
-  it('after TEAM_B server 1 faults (serverNumber→2): TEAM_B_P2 is server', () => {
-    const game = new DoublesGame('TEAM_A')
-    game.winRally('TEAM_B') // side-out → TEAM_B server 1
-    game.winRally('TEAM_A') // TEAM_B server 1 faults → server 2
-    expect(game.getScoreCall()).toBe('0-0-2')
     expect(game.getServingPlayerId()).toBe('TEAM_B_P2')
   })
 
-  it('after TEAM_A gets serve back at odd score: non-anchor (TEAM_A_P2) is server 1', () => {
+  it('after TEAM_B scores as server 1: TEAM_B_P2 still server (switched sides)', () => {
+    const game = new DoublesGame('TEAM_A')
+    game.winRally('TEAM_B') // side-out → TEAM_B server 1
+    game.winRally('TEAM_B') // TEAM_B scores
+    expect(game.getServingPlayerId()).toBe('TEAM_B_P2')
+  })
+
+  it('after TEAM_B server 1 faults (serverNumber→2): TEAM_B_P1 is server', () => {
+    const game = new DoublesGame('TEAM_A')
+    game.winRally('TEAM_B') // side-out → TEAM_B server 1 (P2)
+    game.winRally('TEAM_A') // TEAM_B server 1 faults → server 2 (P1)
+    expect(game.getScoreCall()).toBe('0-0-2')
+    expect(game.getServingPlayerId()).toBe('TEAM_B_P1')
+  })
+
+  it('after TEAM_A gets serve back at odd score: P1 (1位) is server 1', () => {
     // TEAM_A scores 1, then loses serve → TEAM_B serves → both TEAM_B servers fault → TEAM_A serves at score 1 (odd)
     const game = new DoublesGame('TEAM_A')
     game.winRally('TEAM_A')  // A scores 1 → 1-0-2
-    game.winRally('TEAM_B')  // first-serve side-out → B server 1
-    game.winRally('TEAM_A')  // B server 1 faults → B server 2
+    game.winRally('TEAM_B')  // first-serve side-out → B server 1 (P2)
+    game.winRally('TEAM_A')  // B server 1 faults → B server 2 (P1)
     game.winRally('TEAM_A')  // B server 2 faults → side-out A server 1
     expect(game.getScoreCall()).toBe('1-0-1')
-    // A score=1 (odd) → anchor (P1) on LEFT, non-anchor (P2) on RIGHT → P2 is server 1
-    expect(game.getServingPlayerId()).toBe('TEAM_A_P2')
+    // A score=1 (odd) → anchor P2 on LEFT, P1 on RIGHT → P1 is server 1
+    expect(game.getServingPlayerId()).toBe('TEAM_A_P1')
   })
 
   it('undo restores servingPlayerId', () => {
     const game = new DoublesGame('TEAM_A')
-    game.winRally('TEAM_B') // side-out → TEAM_B server 1 (P1)
-    game.winRally('TEAM_A') // TEAM_B server 1 faults → server 2 (P2)
-    expect(game.getServingPlayerId()).toBe('TEAM_B_P2')
-    game.undo()
+    game.winRally('TEAM_B') // side-out → TEAM_B server 1 (P2)
+    game.winRally('TEAM_A') // TEAM_B server 1 faults → server 2 (P1)
     expect(game.getServingPlayerId()).toBe('TEAM_B_P1')
+    game.undo()
+    expect(game.getServingPlayerId()).toBe('TEAM_B_P2')
   })
 })
 

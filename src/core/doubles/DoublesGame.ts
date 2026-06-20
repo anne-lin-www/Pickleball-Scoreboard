@@ -60,8 +60,8 @@ function makeTeam(id: TeamId): DoublesTeamState {
     id,
     score: 0,
     serverNumber: 2,
-    currentServingPlayerId: `${id}_P1`,
-    players: [makePlayer(`${id}_P1`, true), makePlayer(`${id}_P2`, false)],
+    currentServingPlayerId: `${id}_P2`,
+    players: [makePlayer(`${id}_P1`, false), makePlayer(`${id}_P2`, true)],
   }
 }
 

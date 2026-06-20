@@ -5,6 +5,9 @@ export interface Strings {
   teamName: string
   player1: string
   player2: string
+  player1Label: string
+  player2Label: string
+  initialServer: string
   firstServe: string
   courtOrientation: string
   topTeam: string
@@ -31,6 +34,9 @@ export const STRINGS: Record<Locale, Strings> = {
     teamName: '隊伍名稱',
     player1: '球員 1',
     player2: '球員 2',
+    player1Label: '球員一（1位）',
+    player2Label: '球員二（2位）',
+    initialServer: '開局發球者：{team} 球員二（Player 2）',
     firstServe: '首先發球',
     courtOrientation: '球場方向（上半場）',
     topTeam: '在上',
@@ -53,6 +59,9 @@ export const STRINGS: Record<Locale, Strings> = {
     teamName: 'Team Name',
     player1: 'Player 1',
     player2: 'Player 2',
+    player1Label: 'Player 1',
+    player2Label: 'Player 2',
+    initialServer: 'Opening server: {team} Player 2',
     firstServe: 'First Serve',
     courtOrientation: 'Court Orientation (Top Half)',
     topTeam: 'on Top',

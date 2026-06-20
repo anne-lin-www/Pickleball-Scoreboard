@@ -8,38 +8,32 @@ TBD - created by archiving change 'ui-game-screen-wiring'. Update Purpose after 
 
 ### Requirement: Unified view model derivation
 
-The system SHALL provide a pure function `deriveViewModel(game, config)` in `src/core/gameViewModel.ts` that projects the current state of a `DoublesGame` or `SinglesGame` instance into a `GameViewModel` plain object suitable for rendering.
+The `deriveViewModel` function maps `SetupConfig` player name fields to `PlayerId` keys. After the P1/P2 convention fix, the mapping SHALL be:
 
-The `GameViewModel` interface SHALL include a `servingPlayerId: PlayerId` field identifying the PlayerId of the current server:
-- For Doubles: derived from `DoublesGame.getServingPlayerId()`, which correctly handles the first-server exception and server #1/#2 transitions
-- For Singles: derived from `SinglesGame.getServingPlayer()`
+- `TEAM_A_P1` → `config.teamAPlayer1` (1位, left side at even scores)
+- `TEAM_A_P2` → `config.teamAPlayer2` (2位, right side at even scores, initial server)
+- `TEAM_B_P1` → `config.teamBPlayer1` (1位, left side at even scores)
+- `TEAM_B_P2` → `config.teamBPlayer2` (2位, right side at even scores, initial server)
 
-#### Scenario: Doubles game — servingPlayerId at game start (first-server exception)
+The mapping keys in `gameViewModel.ts` remain unchanged (`TEAM_A_P1`, etc.); only the semantic understanding is clarified.
 
-- **WHEN** a Doubles game is created with TEAM_A as first serving team
-- **THEN** `deriveViewModel` SHALL produce a GameViewModel where `servingPlayerId === 'TEAM_A_P1'` (anchor player serves under first-server exception)
+#### Scenario: P2 is shown as initial server on game screen
 
-#### Scenario: Doubles game — servingPlayerId after server #1 faults
-
-- **WHEN** server #1 faults and serverNumber advances to 2
-- **THEN** `deriveViewModel` SHALL produce a GameViewModel where `servingPlayerId` equals the partner's PlayerId (the server #2 player)
-
-#### Scenario: Singles game — servingPlayerId
-
-- **WHEN** a Singles game is in progress
-- **THEN** `deriveViewModel` SHALL produce a GameViewModel where `servingPlayerId` equals the PlayerId of the currently serving player
+- **WHEN** a doubles game begins with TEAM_A serving first (score 0-0-2)
+- **THEN** `deriveViewModel` returns `servingPlayerId` = `"TEAM_A_P2"`
+- **THEN** the player rendered on the right side of TEAM_A's court half is the one whose name was entered as Player 2 in Setup
+- **THEN** that player's cell displays the server indicator (●)
 
 
 <!-- @trace
-source: fix-ui-preview-bugs
+source: fix-player-1-2-convention
 updated: 2026-06-20
 code:
-  - src/core/gameViewModel.ts
+  - design-preview-A.html
+  - src/i18n/strings.ts
   - src/screens/SetupScreen.tsx
   - design-preview-B.html
-  - src/screens/GameScreen.tsx
   - src/core/doubles/DoublesGame.ts
-  - design-preview-A.html
 tests:
   - src/core/doubles/DoublesGame.test.ts
 -->

@@ -96,19 +96,27 @@ export default function SetupScreen({ onStart }: Props) {
               onChange={e => setTeamAName(e.target.value)}
               placeholder={`${t('teamName')} A`}
             />
-            <input
-              className="input input-bordered input-sm"
-              value={teamAPlayer1}
-              onChange={e => setTeamAPlayer1(e.target.value)}
-              placeholder={t('player1')}
-            />
-            {mode === 'doubles' && (
+            <div className="flex items-center gap-2">
+              {mode === 'doubles' && (
+                <span className="label-text text-xs text-base-content/60 w-1/3 shrink-0">{t('player1Label')}</span>
+              )}
               <input
-                className="input input-bordered input-sm"
-                value={teamAPlayer2}
-                onChange={e => setTeamAPlayer2(e.target.value)}
-                placeholder={t('player2')}
+                className={`input input-bordered input-sm ${mode === 'doubles' ? 'w-2/3' : 'w-full'}`}
+                value={teamAPlayer1}
+                onChange={e => setTeamAPlayer1(e.target.value)}
+                placeholder={t('player1')}
               />
+            </div>
+            {mode === 'doubles' && (
+              <div className="flex items-center gap-2">
+                <span className="label-text text-xs text-base-content/60 w-1/3 shrink-0">{t('player2Label')}</span>
+                <input
+                  className="input input-bordered input-sm w-2/3"
+                  value={teamAPlayer2}
+                  onChange={e => setTeamAPlayer2(e.target.value)}
+                  placeholder={t('player2')}
+                />
+              </div>
             )}
           </div>
 
@@ -122,19 +130,27 @@ export default function SetupScreen({ onStart }: Props) {
               onChange={e => setTeamBName(e.target.value)}
               placeholder={`${t('teamName')} B`}
             />
-            <input
-              className="input input-bordered input-sm"
-              value={teamBPlayer1}
-              onChange={e => setTeamBPlayer1(e.target.value)}
-              placeholder={t('player1')}
-            />
-            {mode === 'doubles' && (
+            <div className="flex items-center gap-2">
+              {mode === 'doubles' && (
+                <span className="label-text text-xs text-base-content/60 w-1/3 shrink-0">{t('player1Label')}</span>
+              )}
               <input
-                className="input input-bordered input-sm"
-                value={teamBPlayer2}
-                onChange={e => setTeamBPlayer2(e.target.value)}
-                placeholder={t('player2')}
+                className={`input input-bordered input-sm ${mode === 'doubles' ? 'w-2/3' : 'w-full'}`}
+                value={teamBPlayer1}
+                onChange={e => setTeamBPlayer1(e.target.value)}
+                placeholder={t('player1')}
               />
+            </div>
+            {mode === 'doubles' && (
+              <div className="flex items-center gap-2">
+                <span className="label-text text-xs text-base-content/60 w-1/3 shrink-0">{t('player2Label')}</span>
+                <input
+                  className="input input-bordered input-sm w-2/3"
+                  value={teamBPlayer2}
+                  onChange={e => setTeamBPlayer2(e.target.value)}
+                  placeholder={t('player2')}
+                />
+              </div>
             )}
           </div>
 
@@ -159,6 +175,11 @@ export default function SetupScreen({ onStart }: Props) {
                 {teamBName}
               </button>
             </div>
+            {mode === 'doubles' && (
+              <p className="text-xs text-base-content/50 mt-1">
+                {t('initialServer').replace('{team}', firstServingTeam === 'TEAM_A' ? teamAName : teamBName)}
+              </p>
+            )}
           </div>
 
           {/* Court orientation */}
