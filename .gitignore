@@ -41,3 +41,7 @@ docs/
 
 # JetBrains
 .idea/
+
+# playwright
+.playwright-mcp/
+screenshot-*.png
