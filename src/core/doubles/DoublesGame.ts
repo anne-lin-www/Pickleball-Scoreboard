@@ -39,6 +39,18 @@ interface GameSnapshot {
   winner: TeamId | null
 }
 
+export interface SerializedDoublesGame {
+  type: 'doubles'
+  initialServingTeamId: TeamId
+  teamA: DoublesTeamState
+  teamB: DoublesTeamState
+  servingTeamId: TeamId
+  isFirstServe: boolean
+  status: GameStatus
+  winner: TeamId | null
+  history: GameSnapshot[]
+}
+
 function makePlayer(id: PlayerId, isStartingRight: boolean): Player {
   return { id, isStartingRight, currentSide: isStartingRight ? 'RIGHT' : 'LEFT' }
 }
@@ -229,5 +241,45 @@ export class DoublesGame implements IDoublesScoreboard {
         `Position Error: ${anchor.id} should be on ${expected} (score ${team.score} is ${team.score % 2 === 0 ? 'even' : 'odd'}), but is on ${anchor.currentSide}`
       )
     }
+  }
+
+  serialize(): SerializedDoublesGame {
+    return {
+      type: 'doubles',
+      initialServingTeamId: this.initialServingTeamId,
+      teamA: cloneTeam(this.teamA),
+      teamB: cloneTeam(this.teamB),
+      servingTeamId: this.servingTeamId,
+      isFirstServe: this.isFirstServe,
+      status: this.status,
+      winner: this.winner,
+      history: this.history.map(snap => ({
+        teamA: cloneTeam(snap.teamA),
+        teamB: cloneTeam(snap.teamB),
+        servingTeamId: snap.servingTeamId,
+        isFirstServe: snap.isFirstServe,
+        status: snap.status,
+        winner: snap.winner,
+      })),
+    }
+  }
+
+  static fromSerialized(data: SerializedDoublesGame): DoublesGame {
+    const game = new DoublesGame(data.initialServingTeamId)
+    game.teamA = cloneTeam(data.teamA)
+    game.teamB = cloneTeam(data.teamB)
+    game.servingTeamId = data.servingTeamId
+    game.isFirstServe = data.isFirstServe
+    game.status = data.status
+    game.winner = data.winner
+    game.history = data.history.map(snap => ({
+      teamA: cloneTeam(snap.teamA),
+      teamB: cloneTeam(snap.teamB),
+      servingTeamId: snap.servingTeamId,
+      isFirstServe: snap.isFirstServe,
+      status: snap.status,
+      winner: snap.winner,
+    }))
+    return game
   }
 }

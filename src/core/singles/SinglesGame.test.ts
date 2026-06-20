@@ -287,6 +287,59 @@ describe('SinglesGame — undo restores previous state (S6.1, S6.2)', () => {
   })
 })
 
+describe('SinglesGame — serialization round-trip', () => {
+  it('serialize returns type: singles', () => {
+    const game = new SinglesGame('A', 'B')
+    expect(game.serialize().type).toBe('singles')
+  })
+
+  it('fromSerialized restores initial state', () => {
+    const game = new SinglesGame('A', 'B')
+    const restored = SinglesGame.fromSerialized(game.serialize())
+    expect(restored.getScoreCall()).toBe(game.getScoreCall())
+    expect(restored.getServingPlayer()).toBe(game.getServingPlayer())
+    expect(restored.getPlayerSide('A')).toBe(game.getPlayerSide('A'))
+    expect(restored.getPlayerSide('B')).toBe(game.getPlayerSide('B'))
+    expect(restored.getStatus()).toBe(game.getStatus())
+    expect(restored.getWinner()).toBe(game.getWinner())
+  })
+
+  it('fromSerialized restores state after several rallies', () => {
+    const game = new SinglesGame('A', 'B')
+    game.winRally('A')
+    game.winRally('A')
+    game.winRally('A')
+    game.winRally('B') // transfer to B
+    game.winRally('B') // B scores
+    const restored = SinglesGame.fromSerialized(game.serialize())
+    expect(restored.getScoreCall()).toBe(game.getScoreCall())
+    expect(restored.getServingPlayer()).toBe(game.getServingPlayer())
+    expect(restored.getPlayerSide('A')).toBe(game.getPlayerSide('A'))
+    expect(restored.getPlayerSide('B')).toBe(game.getPlayerSide('B'))
+    expect(restored.getStatus()).toBe(game.getStatus())
+  })
+
+  it('fromSerialized preserves undo history — undo after restore works', () => {
+    const game = new SinglesGame('A', 'B')
+    game.winRally('A')
+    game.winRally('A')
+    game.winRally('A')
+    const scoreBefore = game.getScoreCall()
+    const restored = SinglesGame.fromSerialized(game.serialize())
+    restored.undo()
+    expect(restored.getScoreCall()).toBe('2-0')
+    expect(restored.getScoreCall()).not.toBe(scoreBefore)
+  })
+
+  it('restored game accepts new rallies correctly', () => {
+    const game = new SinglesGame('A', 'B')
+    game.winRally('A')
+    const restored = SinglesGame.fromSerialized(game.serialize())
+    restored.winRally('A')
+    expect(restored.getScoreCall()).toBe('2-0')
+  })
+})
+
 describe('SinglesGame — reset match (S7)', () => {
   it('reset from in-progress clears all state to initial', () => {
     const game = new SinglesGame('A', 'B')

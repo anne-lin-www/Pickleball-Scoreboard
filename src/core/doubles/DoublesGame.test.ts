@@ -390,3 +390,61 @@ describe('DoublesGame — getServingPlayerId', () => {
     expect(game.getServingPlayerId()).toBe('TEAM_B_P1')
   })
 })
+
+describe('DoublesGame — serialization round-trip', () => {
+  it('serialize returns type: doubles', () => {
+    const game = new DoublesGame('TEAM_A')
+    expect(game.serialize().type).toBe('doubles')
+  })
+
+  it('fromSerialized restores initial state', () => {
+    const game = new DoublesGame('TEAM_A')
+    const restored = DoublesGame.fromSerialized(game.serialize())
+    expect(restored.getScoreCall()).toBe(game.getScoreCall())
+    expect(restored.getServingTeam()).toBe(game.getServingTeam())
+    expect(restored.getServerNumber()).toBe(game.getServerNumber())
+    expect(restored.getServingPlayerId()).toBe(game.getServingPlayerId())
+    expect(restored.getStatus()).toBe(game.getStatus())
+    expect(restored.getWinner()).toBe(game.getWinner())
+    expect(restored.getTeamPositions('TEAM_A')).toEqual(game.getTeamPositions('TEAM_A'))
+    expect(restored.getTeamPositions('TEAM_B')).toEqual(game.getTeamPositions('TEAM_B'))
+  })
+
+  it('fromSerialized restores state after several rallies', () => {
+    const game = new DoublesGame('TEAM_A')
+    game.winRally('TEAM_A') // A scores 1 → 1-0-2
+    game.winRally('TEAM_B') // side-out → B server 1
+    game.winRally('TEAM_A') // B fault → B server 2
+    game.winRally('TEAM_B') // B scores → 1-1-2
+    const restored = DoublesGame.fromSerialized(game.serialize())
+    expect(restored.getScoreCall()).toBe(game.getScoreCall())
+    expect(restored.getServingTeam()).toBe(game.getServingTeam())
+    expect(restored.getServerNumber()).toBe(game.getServerNumber())
+    expect(restored.getServingPlayerId()).toBe(game.getServingPlayerId())
+    expect(restored.getStatus()).toBe(game.getStatus())
+    expect(restored.getTeamPositions('TEAM_A')).toEqual(game.getTeamPositions('TEAM_A'))
+    expect(restored.getTeamPositions('TEAM_B')).toEqual(game.getTeamPositions('TEAM_B'))
+  })
+
+  it('fromSerialized restores after isFirstServe becomes false', () => {
+    const game = new DoublesGame('TEAM_A')
+    game.winRally('TEAM_B') // side-out: isFirstServe=false
+    const restored = DoublesGame.fromSerialized(game.serialize())
+    expect(restored.getServingTeam()).toBe('TEAM_B')
+    expect(restored.getServerNumber()).toBe(1)
+    // next fault should advance to server 2, not side-out
+    restored.winRally('TEAM_A')
+    expect(restored.getServingTeam()).toBe('TEAM_B')
+    expect(restored.getServerNumber()).toBe(2)
+  })
+
+  it('fromSerialized preserves undo history — undo after restore works', () => {
+    const game = new DoublesGame('TEAM_A')
+    game.winRally('TEAM_A') // 1-0-2
+    game.winRally('TEAM_A') // 2-0-2
+    game.winRally('TEAM_A') // 3-0-2
+    const restored = DoublesGame.fromSerialized(game.serialize())
+    restored.undo()
+    expect(restored.getScoreCall()).toBe('2-0-2')
+  })
+})

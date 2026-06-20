@@ -1,10 +1,4 @@
-# screen-routing Specification
-
-## Purpose
-
-TBD - created by archiving change 'ui-setup-screen-wiring'. Update Purpose after archive.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: App stores game instance after setup
 
@@ -26,26 +20,8 @@ After the operator submits the setup form, the App SHALL create and store a game
 - **WHEN** App first loads and no setup has been submitted and `localStorage['pickleball_game']` is absent
 - **THEN** App SHALL render the Setup screen and game instance SHALL be null
 
+## ADDED Requirements
 
-<!-- @trace
-source: game-state-persistence
-updated: 2026-06-20
-code:
-  - src/components/ResumeDialog.tsx
-  - design-preview-B.html
-  - package.json
-  - src/App.tsx
-  - src/core/doubles/DoublesGame.ts
-  - src/core/singles/SinglesGame.ts
-  - src/hooks/useGamePersistence.ts
-  - design-preview-A.html
-tests:
-  - src/hooks/useGamePersistence.test.ts
-  - src/core/doubles/DoublesGame.test.ts
-  - src/core/singles/SinglesGame.test.ts
--->
-
----
 ### Requirement: App routes to Game Screen when persisted state exists
 
 When the user confirms via ResumeDialog, the App SHALL reconstruct the game from persisted state and route to the Game Screen, bypassing the Setup Screen.
@@ -69,39 +45,3 @@ When the user confirms via ResumeDialog, the App SHALL reconstruct the game from
 - **WHEN** the App has shown the ResumeDialog and the user selects "New Game"
 - **THEN** the App SHALL remain on the Setup Screen
 - **THEN** the ResumeDialog SHALL no longer be visible
-
-<!-- @trace
-source: ui-setup-screen-wiring, game-state-persistence
-updated: 2026-06-20
-code:
-  - src/core/gameInit.ts
-  - design-preview-B.html
-  - src/App.tsx
-  - src/core/gameViewModel.ts
-  - src/i18n/strings.ts
-  - src/mock/gameState.ts
-  - src/screens/SetupScreen.tsx
-  - design-preview-A.html
-  - src/screens/GameScreen.tsx
-tests:
-  - src/core/gameViewModel.test.ts
-  - src/core/gameInit.test.ts
--->
-
-<!-- @trace
-source: game-state-persistence
-updated: 2026-06-20
-code:
-  - src/components/ResumeDialog.tsx
-  - design-preview-B.html
-  - package.json
-  - src/App.tsx
-  - src/core/doubles/DoublesGame.ts
-  - src/core/singles/SinglesGame.ts
-  - src/hooks/useGamePersistence.ts
-  - design-preview-A.html
-tests:
-  - src/hooks/useGamePersistence.test.ts
-  - src/core/doubles/DoublesGame.test.ts
-  - src/core/singles/SinglesGame.test.ts
--->

@@ -28,6 +28,17 @@ interface GameSnapshot {
   winner: PlayerId | null
 }
 
+export interface SerializedSinglesGame {
+  type: 'singles'
+  initialServingPlayerId: PlayerId
+  playerA: SinglesPlayerState
+  playerB: SinglesPlayerState
+  servingPlayerId: PlayerId
+  status: GameStatus
+  winner: PlayerId | null
+  history: GameSnapshot[]
+}
+
 function expectedSide(score: number): CourtSide {
   return score % 2 === 0 ? 'RIGHT' : 'LEFT'
 }
@@ -148,5 +159,41 @@ export class SinglesGame implements ISinglesScoreboard {
         `Position Error: ${serving.id} should be on ${expected} (score ${serving.score} is ${serving.score % 2 === 0 ? 'even' : 'odd'}), but is on ${serving.currentSide}`
       )
     }
+  }
+
+  serialize(): SerializedSinglesGame {
+    return {
+      type: 'singles',
+      initialServingPlayerId: this.initialServingPlayerId,
+      playerA: clonePlayer(this.playerA),
+      playerB: clonePlayer(this.playerB),
+      servingPlayerId: this.servingPlayerId,
+      status: this.status,
+      winner: this.winner,
+      history: this.history.map(snap => ({
+        playerA: clonePlayer(snap.playerA),
+        playerB: clonePlayer(snap.playerB),
+        servingPlayerId: snap.servingPlayerId,
+        status: snap.status,
+        winner: snap.winner,
+      })),
+    }
+  }
+
+  static fromSerialized(data: SerializedSinglesGame): SinglesGame {
+    const game = new SinglesGame(data.initialServingPlayerId, data.playerA.id === data.initialServingPlayerId ? data.playerB.id : data.playerA.id)
+    game.playerA = clonePlayer(data.playerA)
+    game.playerB = clonePlayer(data.playerB)
+    game.servingPlayerId = data.servingPlayerId
+    game.status = data.status
+    game.winner = data.winner
+    game.history = data.history.map(snap => ({
+      playerA: clonePlayer(snap.playerA),
+      playerB: clonePlayer(snap.playerB),
+      servingPlayerId: snap.servingPlayerId,
+      status: snap.status,
+      winner: snap.winner,
+    }))
+    return game
   }
 }
