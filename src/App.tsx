@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { ThemeProvider } from './theme/ThemeContext'
+import { LocaleProvider } from './i18n/LocaleContext'
 import SetupScreen, { type SetupConfig } from './screens/SetupScreen'
 import GameScreen from './screens/GameScreen'
 import GameOverScreen from './screens/GameOverScreen'
@@ -24,13 +26,17 @@ export default function App() {
     setScreen('setup')
   }
 
-  if (screen === 'setup') {
-    return <SetupScreen onStart={handleStart} />
-  }
-
-  if (screen === 'game' && config !== null) {
-    return <GameScreen config={config} onReset={handleReset} />
-  }
-
-  return <GameOverScreen winner={winner} onRematch={handleRematch} />
+  return (
+    <ThemeProvider>
+      <LocaleProvider>
+        {screen === 'setup' && <SetupScreen onStart={handleStart} />}
+        {screen === 'game' && config !== null && (
+          <GameScreen config={config} onReset={handleReset} />
+        )}
+        {(screen === 'game-over' || (screen === 'game' && config === null)) && (
+          <GameOverScreen winner={winner} onRematch={handleRematch} />
+        )}
+      </LocaleProvider>
+    </ThemeProvider>
+  )
 }

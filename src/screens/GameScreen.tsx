@@ -1,6 +1,7 @@
 import React from 'react'
 import type { SetupConfig } from './SetupScreen'
 import { mockDoublesState, type MockPlayer, type MockTeam } from '../mock/gameState'
+import { useLocale } from '../i18n/LocaleContext'
 
 interface Props {
   config: SetupConfig
@@ -8,31 +9,19 @@ interface Props {
 }
 
 // Bird's-eye absolute coordinate positioning:
-// Top team faces south (toward the net/bottom of screen):
-//   their RIGHT side = screen-LEFT, their LEFT side = screen-RIGHT
-// Bottom team faces north (toward the net/top of screen):
-//   their LEFT side = screen-LEFT, their RIGHT side = screen-RIGHT
-//
-// This matches the visual reality of an operator standing at the bottom team's baseline.
+// Top team faces south: their RIGHT side = screen-LEFT, their LEFT = screen-RIGHT
+// Bottom team faces north: their LEFT side = screen-LEFT, their RIGHT = screen-RIGHT
 function getCourtColumns(team: MockTeam, isTopTeam: boolean): [MockPlayer, MockPlayer] {
   const right = team.players.find(p => p.currentSide === 'RIGHT')!
   const left = team.players.find(p => p.currentSide === 'LEFT')!
-  // Top team: RIGHT player on screen-left, LEFT player on screen-right
-  // Bottom team: LEFT player on screen-left, RIGHT player on screen-right
   return isTopTeam ? [right, left] : [left, right]
 }
 
-function PlayerCell({
-  player,
-  isServer,
-}: {
-  player: MockPlayer
-  isServer: boolean
-}) {
+function PlayerCell({ player, isServer }: { player: MockPlayer; isServer: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center gap-1 p-2">
-      <span className="text-base md:text-lg font-semibold leading-tight text-center">
-        {isServer && <span className="text-warning mr-1">●</span>}
+      <span className="font-sans text-base md:text-lg font-semibold leading-tight text-center">
+        {isServer && <span className="text-accent mr-1">●</span>}
         {player.name}
       </span>
     </div>
@@ -42,6 +31,7 @@ function PlayerCell({
 function CourtHalf({
   team,
   isTopTeam,
+  isTopTeamA,
   servingTeamId,
   serverNumber,
   tapEnabled,
@@ -49,6 +39,7 @@ function CourtHalf({
 }: {
   team: MockTeam
   isTopTeam: boolean
+  isTopTeamA: boolean
   servingTeamId: string
   serverNumber: 1 | 2
   tapEnabled: boolean
@@ -57,16 +48,23 @@ function CourtHalf({
   const isServing = team.id === servingTeamId
   const [screenLeft, screenRight] = getCourtColumns(team, isTopTeam)
 
+  // Determine if this half belongs to Team A or Team B for color theming
+  const isTeamA = isTopTeam ? isTopTeamA : !isTopTeamA
+
+  function getServingBg(): string {
+    if (!isServing) return 'bg-base-100'
+    return isTeamA ? 'bg-primary/10' : 'bg-secondary/10'
+  }
+
   function getIsServer(player: MockPlayer): boolean {
     if (!isServing) return false
-    // Server number 1 = anchor player (isStartingRight), server 2 = the other
     const anchorId = team.players.find(p => p.isStartingRight)?.id
     return serverNumber === 1 ? player.id === anchorId : player.id !== anchorId
   }
 
   return (
     <div
-      className={`flex-1 flex divide-x divide-base-300 ${tapEnabled ? 'cursor-pointer active:opacity-70' : ''} ${isServing ? 'bg-base-200' : 'bg-base-100'}`}
+      className={`flex-1 flex divide-x divide-base-300 ${tapEnabled ? 'cursor-pointer active:opacity-70' : ''} ${getServingBg()}`}
       onClick={tapEnabled ? onTap : undefined}
     >
       <div className="flex-1 flex items-center justify-center">
@@ -80,12 +78,17 @@ function CourtHalf({
 }
 
 export default function GameScreen({ config, onReset }: Props) {
+  const { t } = useLocale()
   const state = mockDoublesState
   const topTeam = state.topTeam
   const bottomTeam = state.bottomTeam
 
+  // Determine which team is Team A to drive theming
+  const isTopTeamA = topTeam.id === 'TEAM_A'
+
   const servingTeam = state.servingTeamId === topTeam.id ? topTeam : bottomTeam
   const receivingTeam = state.servingTeamId === topTeam.id ? bottomTeam : topTeam
+  const isServingTeamA = servingTeam.id === 'TEAM_A'
 
   const tapEnabled = state.tapCourtEnabled
 
@@ -94,17 +97,17 @@ export default function GameScreen({ config, onReset }: Props) {
 
       {/* Team name header */}
       <div className="flex justify-between items-center px-4 py-2 bg-base-100 shadow text-sm font-semibold">
-        <span>{topTeam.name}</span>
+        <span className={isTopTeamA ? 'text-primary' : 'text-secondary'}>{topTeam.name}</span>
         <span className="text-xs text-base-content/50">vs</span>
-        <span>{bottomTeam.name}</span>
+        <span className={isTopTeamA ? 'text-secondary' : 'text-primary'}>{bottomTeam.name}</span>
       </div>
 
       {/* Court */}
       <div className="flex-1 flex flex-col mx-4 my-3 rounded-xl overflow-hidden border-2 border-base-content/20 shadow-lg" style={{ minHeight: '55vh' }}>
-        {/* Top half */}
         <CourtHalf
           team={topTeam}
           isTopTeam={true}
+          isTopTeamA={isTopTeamA}
           servingTeamId={state.servingTeamId}
           serverNumber={state.serverNumber}
           tapEnabled={tapEnabled}
@@ -113,13 +116,15 @@ export default function GameScreen({ config, onReset }: Props) {
 
         {/* Net */}
         <div className="flex items-center justify-center py-1 bg-base-content/80">
-          <span className="text-xs font-bold tracking-widest text-base-100 uppercase">NET</span>
+          <span className="font-sans text-xs font-bold tracking-widest text-base-100 uppercase">
+            {t('net')}
+          </span>
         </div>
 
-        {/* Bottom half */}
         <CourtHalf
           team={bottomTeam}
           isTopTeam={false}
+          isTopTeamA={isTopTeamA}
           servingTeamId={state.servingTeamId}
           serverNumber={state.serverNumber}
           tapEnabled={tapEnabled}
@@ -127,28 +132,34 @@ export default function GameScreen({ config, onReset }: Props) {
         />
       </div>
 
-      {/* Three-segment score */}
+      {/* Three-segment score — team-colored */}
       <div className="text-center py-2">
         <div className="inline-flex items-center gap-2 bg-base-100 rounded-2xl px-6 py-3 shadow">
-          <span className="text-5xl font-black tabular-nums">{servingTeam.score}</span>
+          <span className={`font-sans text-5xl font-black tabular-nums ${isServingTeamA ? 'text-primary' : 'text-secondary'}`}>
+            {servingTeam.score}
+          </span>
           <span className="text-2xl text-base-content/40 font-light">–</span>
-          <span className="text-5xl font-black tabular-nums">{receivingTeam.score}</span>
+          <span className={`font-sans text-5xl font-black tabular-nums ${isServingTeamA ? 'text-secondary' : 'text-primary'}`}>
+            {receivingTeam.score}
+          </span>
           <span className="text-2xl text-base-content/40 font-light">–</span>
-          <span className="text-5xl font-black tabular-nums">{state.serverNumber}</span>
+          <span className="font-sans text-5xl font-black tabular-nums text-accent">
+            {state.serverNumber}
+          </span>
         </div>
-        <p className="text-xs text-base-content/40 mt-1">發球方 – 接球方 – 發球序號</p>
+        <p className="font-sans text-xs text-base-content/40 mt-1">{t('scoreLabel')}</p>
       </div>
 
-      {/* Fixed scoring buttons */}
+      {/* Scoring buttons */}
       <div className="grid grid-cols-2 gap-3 px-4 pb-2">
         <button
-          className="btn btn-success btn-lg text-lg"
+          className={`btn btn-lg text-lg font-sans ${isTopTeamA ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => console.log(`${topTeam.name} +1`)}
         >
           {topTeam.name} +1
         </button>
         <button
-          className="btn btn-success btn-lg text-lg"
+          className={`btn btn-lg text-lg font-sans ${isTopTeamA ? 'btn-secondary' : 'btn-primary'}`}
           onClick={() => console.log(`${bottomTeam.name} +1`)}
         >
           {bottomTeam.name} +1
@@ -158,16 +169,16 @@ export default function GameScreen({ config, onReset }: Props) {
       {/* Undo / Reset */}
       <div className="grid grid-cols-2 gap-3 px-4 pb-4">
         <button
-          className="btn btn-outline btn-warning"
+          className="btn btn-outline font-sans"
           onClick={() => console.log('undo')}
         >
-          ↩ Undo
+          {t('undo')}
         </button>
         <button
-          className="btn btn-outline btn-error"
+          className="btn btn-outline btn-error font-sans"
           onClick={() => onReset(topTeam.name)}
         >
-          Reset
+          {t('reset')}
         </button>
       </div>
     </div>
