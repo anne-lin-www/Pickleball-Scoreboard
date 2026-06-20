@@ -5,6 +5,7 @@ export type { CourtSide, GameStatus, TeamId, PlayerId }
 export interface IDoublesScoreboard {
   winRally(winner: TeamId): void
   undo(): void
+  reset(): void
   getScoreCall(): string
   getServingTeam(): TeamId
   getServerNumber(): 1 | 2
@@ -81,6 +82,7 @@ function checkWin(scoring: DoublesTeamState, other: DoublesTeamState): boolean {
 }
 
 export class DoublesGame implements IDoublesScoreboard {
+  private readonly initialServingTeamId: TeamId
   private teamA: DoublesTeamState
   private teamB: DoublesTeamState
   private servingTeamId: TeamId
@@ -90,6 +92,7 @@ export class DoublesGame implements IDoublesScoreboard {
   private history: GameSnapshot[]
 
   constructor(firstServingTeam: TeamId) {
+    this.initialServingTeamId = firstServingTeam
     this.teamA = makeTeam('TEAM_A')
     this.teamB = makeTeam('TEAM_B')
     this.servingTeamId = firstServingTeam
@@ -164,6 +167,16 @@ export class DoublesGame implements IDoublesScoreboard {
   undo(): void {
     const snap = this.history.pop()
     if (snap) this.restore(snap)
+  }
+
+  reset(): void {
+    this.teamA = makeTeam('TEAM_A')
+    this.teamB = makeTeam('TEAM_B')
+    this.servingTeamId = this.initialServingTeamId
+    this.isFirstServe = true
+    this.status = 'IN_PROGRESS'
+    this.winner = null
+    this.history = []
   }
 
   getScoreCall(): string {

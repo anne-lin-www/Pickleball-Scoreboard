@@ -5,6 +5,7 @@ export type { CourtSide, GameStatus, PlayerId }
 export interface ISinglesScoreboard {
   winRally(winner: PlayerId): void
   undo(): void
+  reset(): void
   getScoreCall(): string
   getServingPlayer(): PlayerId
   getPlayerSide(id: PlayerId): CourtSide
@@ -40,6 +41,7 @@ function checkWin(scorer: SinglesPlayerState, other: SinglesPlayerState): boolea
 }
 
 export class SinglesGame implements ISinglesScoreboard {
+  private readonly initialServingPlayerId: PlayerId
   private playerA: SinglesPlayerState
   private playerB: SinglesPlayerState
   private servingPlayerId: PlayerId
@@ -48,6 +50,7 @@ export class SinglesGame implements ISinglesScoreboard {
   private history: GameSnapshot[]
 
   constructor(playerAId: PlayerId, playerBId: PlayerId) {
+    this.initialServingPlayerId = playerAId
     this.playerA = { id: playerAId, score: 0, currentSide: 'RIGHT' }
     this.playerB = { id: playerBId, score: 0, currentSide: 'RIGHT' }
     this.servingPlayerId = playerAId
@@ -106,6 +109,15 @@ export class SinglesGame implements ISinglesScoreboard {
   undo(): void {
     const snap = this.history.pop()
     if (snap) this.restore(snap)
+  }
+
+  reset(): void {
+    this.playerA = { id: this.playerA.id, score: 0, currentSide: 'RIGHT' }
+    this.playerB = { id: this.playerB.id, score: 0, currentSide: 'RIGHT' }
+    this.servingPlayerId = this.initialServingPlayerId
+    this.status = 'IN_PROGRESS'
+    this.winner = null
+    this.history = []
   }
 
   getScoreCall(): string {

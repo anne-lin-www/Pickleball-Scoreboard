@@ -286,3 +286,69 @@ describe('SinglesGame — undo restores previous state (S6.1, S6.2)', () => {
     expect(game.getScoreCall()).toBe('0-0')
   })
 })
+
+describe('SinglesGame — reset match (S7)', () => {
+  it('reset from in-progress clears all state to initial', () => {
+    const game = new SinglesGame('A', 'B')
+    game.winRally('A') // A=1
+    game.winRally('A') // A=2
+    game.reset()
+    expect(game.getScoreCall()).toBe('0-0')
+    expect(game.getServingPlayer()).toBe('A')
+    expect(game.getPlayerSide('A')).toBe('RIGHT')
+    expect(game.getPlayerSide('B')).toBe('RIGHT')
+    expect(game.getStatus()).toBe('IN_PROGRESS')
+    expect(game.getWinner()).toBeNull()
+  })
+
+  it('reset from FINISHED restores to playable state', () => {
+    const game = new SinglesGame('A', 'B')
+    for (let i = 0; i < 11; i++) game.winRally('A')
+    expect(game.getStatus()).toBe('FINISHED')
+    game.reset()
+    expect(game.getStatus()).toBe('IN_PROGRESS')
+    expect(game.getWinner()).toBeNull()
+    expect(game.getScoreCall()).toBe('0-0')
+  })
+
+  it('reset clears undo history — undo after reset is no-op', () => {
+    const game = new SinglesGame('A', 'B')
+    game.winRally('A')
+    game.winRally('A')
+    game.reset()
+    game.undo()
+    expect(game.getScoreCall()).toBe('0-0')
+  })
+
+  it('reset restores serving player to constructor first argument', () => {
+    const game = new SinglesGame('A', 'B')
+    game.winRally('B') // serve transfers to B
+    expect(game.getServingPlayer()).toBe('B')
+    game.reset()
+    expect(game.getServingPlayer()).toBe('A')
+  })
+
+  it('reset is idempotent — multiple resets leave same initial state', () => {
+    const game = new SinglesGame('A', 'B')
+    game.winRally('A')
+    game.reset()
+    expect(game.getScoreCall()).toBe('0-0')
+    game.winRally('B')
+    game.reset()
+    expect(game.getScoreCall()).toBe('0-0')
+    expect(game.getServingPlayer()).toBe('A')
+  })
+
+  it.each([
+    [0,  'reset() on fresh game'],
+    [5,  'score 5 then reset'],
+    [3,  'score 3 then reset then undo'],
+  ])('boundary: %s → getScoreCall returns "0-0"', (scoreTimes) => {
+    const game = new SinglesGame('A', 'B')
+    for (let i = 0; i < scoreTimes; i++) game.winRally('A')
+    game.reset()
+    if (scoreTimes === 3) game.undo()
+    expect(game.getScoreCall()).toBe('0-0')
+    expect(game.getStatus()).toBe('IN_PROGRESS')
+  })
+})

@@ -246,3 +246,91 @@ describe('DoublesGame — undo restores previous state', () => {
     expect(game.getScoreCall()).toBe('0-0-2')
   })
 })
+
+describe('DoublesGame — reset match (D6)', () => {
+  it('reset from in-progress clears all state to initial', () => {
+    const game = new DoublesGame('TEAM_A')
+    game.winRally('TEAM_A')
+    game.winRally('TEAM_A')
+    game.reset()
+    expect(game.getScoreCall()).toBe('0-0-2')
+    expect(game.getServingTeam()).toBe('TEAM_A')
+    expect(game.getServerNumber()).toBe(2)
+    expect(game.getStatus()).toBe('IN_PROGRESS')
+    expect(game.getWinner()).toBeNull()
+  })
+
+  it('reset from FINISHED restores to playable state', () => {
+    // Build a finished game via gameWithScore helper approach
+    const game = new DoublesGame('TEAM_B')
+    game.winRally('TEAM_A') // first serve exception → TEAM_A serves s1
+    for (let i = 0; i < 11; i++) game.winRally('TEAM_A')
+    expect(game.getStatus()).toBe('FINISHED')
+    game.reset()
+    expect(game.getStatus()).toBe('IN_PROGRESS')
+    expect(game.getWinner()).toBeNull()
+    expect(game.getScoreCall()).toBe('0-0-2')
+  })
+
+  it('reset clears undo history — undo after reset is no-op', () => {
+    const game = new DoublesGame('TEAM_A')
+    game.winRally('TEAM_A')
+    game.winRally('TEAM_A')
+    game.reset()
+    game.undo()
+    expect(game.getScoreCall()).toBe('0-0-2')
+  })
+
+  it('reset restores original serving team to constructor argument', () => {
+    const game = new DoublesGame('TEAM_B')
+    game.winRally('TEAM_A') // first-serve Side Out → TEAM_A serves
+    expect(game.getServingTeam()).toBe('TEAM_A')
+    game.reset()
+    expect(game.getServingTeam()).toBe('TEAM_B')
+  })
+
+  it('reset restores first-serve exception — next fault triggers Side Out immediately', () => {
+    const game = new DoublesGame('TEAM_A')
+    game.winRally('TEAM_B') // first-serve exception fires → isFirstServe=false, TEAM_B serves
+    game.reset()
+    // After reset, isFirstServe should be true again
+    // TEAM_A serves; fault → immediate Side Out to TEAM_B server 1
+    game.winRally('TEAM_B')
+    expect(game.getServingTeam()).toBe('TEAM_B')
+    expect(game.getServerNumber()).toBe(1)
+    expect(game.getScoreCall()).toBe('0-0-1')
+  })
+
+  it('reset restores player positions — anchor on RIGHT', () => {
+    const game = new DoublesGame('TEAM_A')
+    game.winRally('TEAM_A') // players swapped
+    game.reset()
+    const positions = game.getTeamPositions('TEAM_A')
+    expect(positions['TEAM_A_P1']).toBe('RIGHT') // anchor
+    expect(positions['TEAM_A_P2']).toBe('LEFT')  // non-anchor
+  })
+
+  it('reset is idempotent — multiple resets leave same initial state', () => {
+    const game = new DoublesGame('TEAM_A')
+    game.winRally('TEAM_A')
+    game.reset()
+    expect(game.getScoreCall()).toBe('0-0-2')
+    game.winRally('TEAM_A')
+    game.reset()
+    expect(game.getScoreCall()).toBe('0-0-2')
+    expect(game.getServingTeam()).toBe('TEAM_A')
+  })
+
+  it.each([
+    [0,  false, 'reset on fresh game'],
+    [5,  false, 'score 5 then reset'],
+    [3,  true,  'score 3 then reset then undo'],
+  ])('boundary: %s scores → getScoreCall returns "0-0-2"', (scoreTimes, doUndo) => {
+    const game = new DoublesGame('TEAM_A')
+    for (let i = 0; i < scoreTimes; i++) game.winRally('TEAM_A')
+    game.reset()
+    if (doUndo) game.undo()
+    expect(game.getScoreCall()).toBe('0-0-2')
+    expect(game.getStatus()).toBe('IN_PROGRESS')
+  })
+})
