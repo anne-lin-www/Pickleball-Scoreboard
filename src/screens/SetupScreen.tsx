@@ -16,6 +16,7 @@ export interface SetupConfig {
   teamBPlayer1: string
   teamBPlayer2: string
   firstServingTeam: TeamId
+  gamesCount: 1 | 3
 }
 
 interface Props {
@@ -33,6 +34,7 @@ export default function SetupScreen({ onStart }: Props) {
   const [teamBPlayer1, setTeamBPlayer1] = useState('Player 1')
   const [teamBPlayer2, setTeamBPlayer2] = useState('Player 2')
   const [firstServingTeam, setFirstServingTeam] = useState<TeamId>('TEAM_A')
+  const [gamesCount, setGamesCount] = useState<1 | 3>(1)
 
   function handleStart() {
     onStart({
@@ -45,6 +47,7 @@ export default function SetupScreen({ onStart }: Props) {
       teamBPlayer1,
       teamBPlayer2,
       firstServingTeam,
+      gamesCount,
     })
   }
 
@@ -175,6 +178,27 @@ export default function SetupScreen({ onStart }: Props) {
                 onClick={() => setTopTeamId('TEAM_B')}
               >
                 {teamBName} {t('topTeam')}
+              </button>
+            </div>
+          </div>
+
+          {/* Games count */}
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-semibold">{t('gamesCount')}</span>
+            </label>
+            <div className="join w-full">
+              <button
+                className={`btn join-item flex-1 ${gamesCount === 1 ? 'btn-neutral' : 'btn-outline'}`}
+                onClick={() => setGamesCount(1)}
+              >
+                {t('oneGame')}
+              </button>
+              <button
+                className={`btn join-item flex-1 ${gamesCount === 3 ? 'btn-neutral' : 'btn-outline'}`}
+                onClick={() => setGamesCount(3)}
+              >
+                {t('bestOfThree')}
               </button>
             </div>
           </div>

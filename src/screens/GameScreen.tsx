@@ -1,9 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import type { SetupConfig } from './SetupScreen'
-import { mockDoublesState, type MockPlayer, type MockTeam } from '../mock/gameState'
 import { useLocale } from '../i18n/LocaleContext'
+import type { DoublesGame } from '../core/doubles/DoublesGame'
+import type { SinglesGame } from '../core/singles/SinglesGame'
+import type { TeamId } from '../core/types'
+import { deriveViewModel, type PlayerView, type TeamView } from '../core/gameViewModel'
 
 interface Props {
+  game: DoublesGame | SinglesGame
   config: SetupConfig
   onReset: (winner: string) => void
 }
@@ -11,13 +15,20 @@ interface Props {
 // Bird's-eye absolute coordinate positioning:
 // Top team faces south: their RIGHT side = screen-LEFT, their LEFT = screen-RIGHT
 // Bottom team faces north: their LEFT side = screen-LEFT, their RIGHT = screen-RIGHT
-function getCourtColumns(team: MockTeam, isTopTeam: boolean): [MockPlayer, MockPlayer] {
-  const right = team.players.find(p => p.currentSide === 'RIGHT')!
-  const left = team.players.find(p => p.currentSide === 'LEFT')!
+function getCourtColumns(team: TeamView, isTopTeam: boolean): [PlayerView | null, PlayerView | null] {
+  if (team.players.length === 1) {
+    const player = team.players[0] ?? null
+    const rightCell: PlayerView | null = player?.side === 'RIGHT' ? player : null
+    const leftCell: PlayerView | null = player?.side === 'LEFT' ? player : null
+    return isTopTeam ? [rightCell, leftCell] : [leftCell, rightCell]
+  }
+  const right = team.players.find(p => p.side === 'RIGHT') ?? null
+  const left = team.players.find(p => p.side === 'LEFT') ?? null
   return isTopTeam ? [right, left] : [left, right]
 }
 
-function PlayerCell({ player, isServer }: { player: MockPlayer; isServer: boolean }) {
+function PlayerCell({ player, isServer }: { player: PlayerView | null; isServer: boolean }) {
+  if (!player) return <div className="flex-1" />
   return (
     <div className="flex flex-col items-center justify-center gap-1 p-2">
       <span className="font-sans text-base md:text-lg font-semibold leading-tight text-center">
@@ -26,6 +37,14 @@ function PlayerCell({ player, isServer }: { player: MockPlayer; isServer: boolea
       </span>
     </div>
   )
+}
+
+function getIsServer(player: PlayerView, team: TeamView, isServing: boolean, serverNumber: 1 | 2): boolean {
+  if (!isServing) return false
+  if (team.players.length === 1) return true
+  // doubles: _P1 = server #1, _P2 = server #2
+  const isP1 = player.id.endsWith('_P1')
+  return serverNumber === 1 ? isP1 : !isP1
 }
 
 function CourtHalf({
@@ -37,29 +56,21 @@ function CourtHalf({
   tapEnabled,
   onTap,
 }: {
-  team: MockTeam
+  team: TeamView
   isTopTeam: boolean
   isTopTeamA: boolean
-  servingTeamId: string
+  servingTeamId: TeamId
   serverNumber: 1 | 2
   tapEnabled: boolean
   onTap: () => void
 }) {
   const isServing = team.id === servingTeamId
   const [screenLeft, screenRight] = getCourtColumns(team, isTopTeam)
-
-  // Determine if this half belongs to Team A or Team B for color theming
   const isTeamA = isTopTeam ? isTopTeamA : !isTopTeamA
 
   function getServingBg(): string {
     if (!isServing) return 'bg-base-100'
     return isTeamA ? 'bg-primary/10' : 'bg-secondary/10'
-  }
-
-  function getIsServer(player: MockPlayer): boolean {
-    if (!isServing) return false
-    const anchorId = team.players.find(p => p.isStartingRight)?.id
-    return serverNumber === 1 ? player.id === anchorId : player.id !== anchorId
   }
 
   return (
@@ -68,29 +79,50 @@ function CourtHalf({
       onClick={tapEnabled ? onTap : undefined}
     >
       <div className="flex-1 flex items-center justify-center">
-        <PlayerCell player={screenLeft} isServer={getIsServer(screenLeft)} />
+        <PlayerCell
+          player={screenLeft}
+          isServer={screenLeft ? getIsServer(screenLeft, team, isServing, serverNumber) : false}
+        />
       </div>
       <div className="flex-1 flex items-center justify-center">
-        <PlayerCell player={screenRight} isServer={getIsServer(screenRight)} />
+        <PlayerCell
+          player={screenRight}
+          isServer={screenRight ? getIsServer(screenRight, team, isServing, serverNumber) : false}
+        />
       </div>
     </div>
   )
 }
 
-export default function GameScreen({ config, onReset }: Props) {
+export default function GameScreen({ game, config, onReset }: Props) {
   const { t } = useLocale()
-  const state = mockDoublesState
-  const topTeam = state.topTeam
-  const bottomTeam = state.bottomTeam
+  const [viewModel, setViewModel] = useState(() => deriveViewModel(game, config))
 
-  // Determine which team is Team A to drive theming
+  const { topTeam, bottomTeam, servingTeamId, serverNumber } = viewModel
   const isTopTeamA = topTeam.id === 'TEAM_A'
+  const servingTeam = servingTeamId === topTeam.id ? topTeam : bottomTeam
+  const receivingTeam = servingTeamId === topTeam.id ? bottomTeam : topTeam
+  const isServingTeamA = servingTeamId === 'TEAM_A'
+  const tapEnabled = false
 
-  const servingTeam = state.servingTeamId === topTeam.id ? topTeam : bottomTeam
-  const receivingTeam = state.servingTeamId === topTeam.id ? bottomTeam : topTeam
-  const isServingTeamA = servingTeam.id === 'TEAM_A'
+  function handleScore(teamId: TeamId) {
+    if (viewModel.mode === 'doubles') {
+      ;(game as DoublesGame).winRally(teamId)
+    } else {
+      ;(game as SinglesGame).winRally(`${teamId}_P1`)
+    }
+    if (game.getStatus() === 'FINISHED') {
+      const updated = deriveViewModel(game, config)
+      onReset(updated.winnerName ?? '')
+    } else {
+      setViewModel(deriveViewModel(game, config))
+    }
+  }
 
-  const tapEnabled = state.tapCourtEnabled
+  function handleUndo() {
+    game.undo()
+    setViewModel(deriveViewModel(game, config))
+  }
 
   return (
     <div className="min-h-screen bg-base-300 flex flex-col">
@@ -108,10 +140,10 @@ export default function GameScreen({ config, onReset }: Props) {
           team={topTeam}
           isTopTeam={true}
           isTopTeamA={isTopTeamA}
-          servingTeamId={state.servingTeamId}
-          serverNumber={state.serverNumber}
+          servingTeamId={servingTeamId}
+          serverNumber={serverNumber}
           tapEnabled={tapEnabled}
-          onTap={() => console.log(`${topTeam.name} scores`)}
+          onTap={() => handleScore(topTeam.id)}
         />
 
         {/* Net */}
@@ -125,10 +157,10 @@ export default function GameScreen({ config, onReset }: Props) {
           team={bottomTeam}
           isTopTeam={false}
           isTopTeamA={isTopTeamA}
-          servingTeamId={state.servingTeamId}
-          serverNumber={state.serverNumber}
+          servingTeamId={servingTeamId}
+          serverNumber={serverNumber}
           tapEnabled={tapEnabled}
-          onTap={() => console.log(`${bottomTeam.name} scores`)}
+          onTap={() => handleScore(bottomTeam.id)}
         />
       </div>
 
@@ -144,7 +176,7 @@ export default function GameScreen({ config, onReset }: Props) {
           </span>
           <span className="text-2xl text-base-content/40 font-light">–</span>
           <span className="font-sans text-5xl font-black tabular-nums text-accent">
-            {state.serverNumber}
+            {serverNumber}
           </span>
         </div>
         <p className="font-sans text-xs text-base-content/40 mt-1">{t('scoreLabel')}</p>
@@ -154,13 +186,13 @@ export default function GameScreen({ config, onReset }: Props) {
       <div className="grid grid-cols-2 gap-3 px-4 pb-2">
         <button
           className={`btn btn-lg text-lg font-sans ${isTopTeamA ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => console.log(`${topTeam.name} +1`)}
+          onClick={() => handleScore(topTeam.id)}
         >
           {topTeam.name} +1
         </button>
         <button
           className={`btn btn-lg text-lg font-sans ${isTopTeamA ? 'btn-secondary' : 'btn-primary'}`}
-          onClick={() => console.log(`${bottomTeam.name} +1`)}
+          onClick={() => handleScore(bottomTeam.id)}
         >
           {bottomTeam.name} +1
         </button>
@@ -170,13 +202,13 @@ export default function GameScreen({ config, onReset }: Props) {
       <div className="grid grid-cols-2 gap-3 px-4 pb-4">
         <button
           className="btn btn-outline font-sans"
-          onClick={() => console.log('undo')}
+          onClick={handleUndo}
         >
           {t('undo')}
         </button>
         <button
           className="btn btn-outline btn-error font-sans"
-          onClick={() => onReset(topTeam.name)}
+          onClick={() => onReset('')}
         >
           {t('reset')}
         </button>

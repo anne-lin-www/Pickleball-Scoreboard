@@ -8,6 +8,9 @@ export interface Strings {
   firstServe: string
   courtOrientation: string
   topTeam: string
+  gamesCount: string
+  oneGame: string
+  bestOfThree: string
   startGame: string
   net: string
   serving: string
@@ -31,6 +34,9 @@ export const STRINGS: Record<Locale, Strings> = {
     firstServe: '首先發球',
     courtOrientation: '球場方向（上半場）',
     topTeam: '在上',
+    gamesCount: '局數',
+    oneGame: '1 局',
+    bestOfThree: '三局兩勝',
     startGame: '開始比賽',
     net: '球網',
     serving: '發球中',
@@ -50,6 +56,9 @@ export const STRINGS: Record<Locale, Strings> = {
     firstServe: 'First Serve',
     courtOrientation: 'Court Orientation (Top Half)',
     topTeam: 'on Top',
+    gamesCount: 'Games',
+    oneGame: '1 Game',
+    bestOfThree: 'Best of 3',
     startGame: 'Start Match',
     net: 'Net',
     serving: 'Serving',
