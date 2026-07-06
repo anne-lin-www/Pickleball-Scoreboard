@@ -86,7 +86,7 @@ export function deriveViewModel(
           : { TEAM_B_P1: config.teamBPlayer1, TEAM_B_P2: config.teamBPlayer2 }
       const players: PlayerView[] = Object.entries(positions).map(([id, side]) => ({
         id,
-        name: playerNames[id as keyof typeof playerNames] ?? id,
+        name: playerNames[id as keyof typeof playerNames] || (id.endsWith('_P2') ? 'P2' : 'P1'),
         side: side as CourtSide,
       }))
       return { id: teamId, name: teamName, score, players }

@@ -306,11 +306,15 @@ export default function MidGameSetupScreen({ onBack, onStart }: Props) {
                   <span className="label-text text-sm">{t('servingScore')}</span>
                 </label>
                 <input
-                  type="number"
-                  min={0}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   className="input input-bordered input-sm w-full"
-                  value={servingScore}
-                  onChange={e => setServingScore(Math.max(0, parseInt(e.target.value) || 0))}
+                  value={String(servingScore)}
+                  onChange={e => {
+                    const digits = e.target.value.replace(/\D/g, '')
+                    setServingScore(digits === '' ? 0 : Math.max(0, parseInt(digits, 10)))
+                  }}
                 />
               </div>
               <div>
@@ -318,11 +322,15 @@ export default function MidGameSetupScreen({ onBack, onStart }: Props) {
                   <span className="label-text text-sm">{t('receivingScore')}</span>
                 </label>
                 <input
-                  type="number"
-                  min={0}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   className="input input-bordered input-sm w-full"
-                  value={receivingScore}
-                  onChange={e => setReceivingScore(Math.max(0, parseInt(e.target.value) || 0))}
+                  value={String(receivingScore)}
+                  onChange={e => {
+                    const digits = e.target.value.replace(/\D/g, '')
+                    setReceivingScore(digits === '' ? 0 : Math.max(0, parseInt(digits, 10)))
+                  }}
                 />
               </div>
             </div>
