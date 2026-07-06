@@ -165,155 +165,105 @@ tests:
 
 The Setup screen SHALL provide a control for the operator to choose which team serves first.
 
-#### Scenario: Serving team options
+In form mode, the control SHALL be a button row displaying the two team names.
 
-- **WHEN** the operator views the Setup screen
-- **THEN** two options SHALL be available: Team A serves first, Team B serves first
+In court diagram mode, the serving team SHALL be selected by tapping a court half (see `setup-court-diagram-input` spec). The button row SHALL NOT be shown in diagram mode.
+
+#### Scenario: Serving team options in form mode
+
+- **WHEN** form mode is active
+- **THEN** two buttons SHALL be available: Team A serves first, Team B serves first
+
+#### Scenario: Serving team selection in diagram mode
+
+- **WHEN** court diagram mode is active
+- **THEN** the serving team button row SHALL NOT be visible; serving team is selected by tapping a court half
+
 
 <!-- @trace
-source: ui-layout-preview
-updated: 2026-06-20
--->
-
-
-<!-- @trace
-source: ui-layout-preview
-updated: 2026-06-20
+source: setup-screen-court-diagram-mode
+updated: 2026-07-05
 code:
-  - index.html
-  - screenshot-game-375.png
-  - src/screens/GameScreen.tsx
-  - postcss.config.ts
-  - .playwright-mcp/page-2026-06-20T07-29-23-513Z.yml
-  - src/App.tsx
-  - src/screens/GameOverScreen.tsx
-  - screenshot-rematch-back.png
-  - src/index.css
-  - .playwright-mcp/page-2026-06-20T07-36-04-849Z.yml
-  - .playwright-mcp/page-2026-06-20T07-33-50-200Z.yml
-  - .playwright-mcp/page-2026-06-20T07-35-10-110Z.yml
-  - src/mock/gameState.ts
-  - screenshot-game-375-fixed.png
-  - .playwright-mcp/page-2026-06-20T07-35-15-864Z.yml
-  - screenshot-game-375-v2.png
-  - screenshot-setup-375.png
-  - .playwright-mcp/page-2026-06-20T07-33-54-806Z.yml
-  - package.json
-  - .playwright-mcp/page-2026-06-20T07-31-44-398Z.yml
-  - .playwright-mcp/page-2026-06-20T07-28-56-666Z.yml
-  - .playwright-mcp/page-2026-06-20T07-25-42-720Z.yml
-  - screenshot-game-768.png
+  - design-preview-A.html
   - src/screens/SetupScreen.tsx
-  - screenshot-game-768-v2.png
-  - src/vite-env.d.ts
-  - tsconfig.json
-  - vite.config.ts
-  - .playwright-mcp/page-2026-06-20T07-31-39-557Z.yml
-  - screenshot-gameover.png
-  - tailwind.config.ts
-  - .playwright-mcp/page-2026-06-20T07-35-54-823Z.yml
-  - src/main.tsx
+  - src/i18n/strings.ts
+  - src/components/CourtDiagramInput.tsx
+  - design-preview-B.html
 -->
 
 ---
 ### Requirement: Initial server info display
 
-The Setup screen SHALL display a dynamic info hint below the first-serving-team selector, identifying the player who will serve first in the game.
+The Setup screen SHALL display a dynamic info hint identifying the player who will serve first. In form mode, the hint SHALL appear directly below the Player 2 name input field for the first-serving team, adjacent to that input, rather than below the first-serve selector. In court diagram mode, the hint is replaced by the visual highlight on the selected court half and SHALL NOT be shown as a separate text element.
 
-The hint text SHALL be: 「開局發球者：{team name} 球員二（Player 2）」
+The hint text SHALL be: 「開局發球者：{team name} 球員二（Player 2）」 (zh-TW)
 
 The hint SHALL update immediately when the operator changes the first-serving team selection.
 
-#### Scenario: Info hint reflects first-serving team selection
+#### Scenario: Info hint shown adjacent to Player 2 input in form mode
 
-- **WHEN** the operator selects TEAM A as the first serving team
-- **THEN** the hint displays: 「開局發球者：{Team A name} 球員二（Player 2）」
+- **WHEN** form mode is active and the operator selects Team A as the first serving team
+- **THEN** the hint 「開局發球者：{Team A name} 球員二（Player 2）」 SHALL appear directly below the Team A Player 2 input field
 
-- **WHEN** the operator switches to TEAM B as the first serving team
-- **THEN** the hint displays: 「開局發球者：{Team B name} 球員二（Player 2）」
+- **WHEN** form mode is active and the operator switches to Team B as the first serving team
+- **THEN** the hint SHALL move to appear below Team B's Player 2 input and SHALL NOT appear below Team A's Player 2 input
+
+#### Scenario: Info hint hidden in diagram mode
+
+- **WHEN** court diagram mode is active
+- **THEN** the initial server text hint SHALL NOT be shown
 
 #### Scenario: Hint only shown in Doubles mode
 
 - **WHEN** Singles mode is active
-- **THEN** the initial server hint SHALL NOT be shown (Singles has no 2位 concept)
-
-<!-- @trace
-source: fix-player-1-2-convention
-updated: 2026-06-20
--->
+- **THEN** the initial server hint SHALL NOT be shown
 
 
 <!-- @trace
-source: fix-player-1-2-convention
-updated: 2026-06-20
+source: setup-screen-court-diagram-mode
+updated: 2026-07-05
 code:
   - design-preview-A.html
-  - src/i18n/strings.ts
   - src/screens/SetupScreen.tsx
+  - src/i18n/strings.ts
+  - src/components/CourtDiagramInput.tsx
   - design-preview-B.html
-  - src/core/doubles/DoublesGame.ts
-tests:
-  - src/core/doubles/DoublesGame.test.ts
 -->
 
 ---
 ### Requirement: Court orientation setting
 
-The Setup screen SHALL allow the operator to choose which team appears at the top of the game screen, establishing the visual orientation of the court relative to the operator's physical position.
+The Setup screen SHALL allow the operator to choose which team appears at the top of the game screen.
+
+In form mode, the control SHALL be a button row (Team A on Top / Team B on Top).
+
+In court diagram mode, the top half of the diagram implicitly defines the top team. The orientation button row SHALL NOT be shown in diagram mode.
 
 #### Scenario: Default court orientation
 
 - **WHEN** the operator has not changed the orientation setting
-- **THEN** Team A SHALL appear at the top of the game screen by default
+- **THEN** Team A SHALL appear at the top by default
 
-#### Scenario: Swapping court orientation
+#### Scenario: Swapping court orientation in form mode
 
-- **WHEN** the operator selects Team B at the top
+- **WHEN** form mode is active and the operator selects Team B at the top
 - **THEN** Team B SHALL appear at the top half of the court on the Game screen and Team A at the bottom
 
-<!-- @trace
-source: ui-layout-preview
-updated: 2026-06-20
--->
+#### Scenario: Court orientation in diagram mode
+
+- **WHEN** court diagram mode is active
+- **THEN** the orientation button row SHALL NOT be visible; the team entered in the top half of the diagram defines the top team
 
 
 <!-- @trace
-source: ui-layout-preview
-updated: 2026-06-20
+source: setup-screen-court-diagram-mode
+updated: 2026-07-05
 code:
-  - index.html
-  - screenshot-game-375.png
-  - src/screens/GameScreen.tsx
-  - postcss.config.ts
-  - .playwright-mcp/page-2026-06-20T07-29-23-513Z.yml
-  - src/App.tsx
-  - src/screens/GameOverScreen.tsx
-  - screenshot-rematch-back.png
-  - src/index.css
-  - .playwright-mcp/page-2026-06-20T07-36-04-849Z.yml
-  - .playwright-mcp/page-2026-06-20T07-33-50-200Z.yml
-  - .playwright-mcp/page-2026-06-20T07-35-10-110Z.yml
-  - src/mock/gameState.ts
-  - screenshot-game-375-fixed.png
-  - .playwright-mcp/page-2026-06-20T07-35-15-864Z.yml
-  - screenshot-game-375-v2.png
-  - screenshot-setup-375.png
-  - .playwright-mcp/page-2026-06-20T07-33-54-806Z.yml
-  - package.json
-  - .playwright-mcp/page-2026-06-20T07-31-44-398Z.yml
-  - .playwright-mcp/page-2026-06-20T07-28-56-666Z.yml
-  - .playwright-mcp/page-2026-06-20T07-25-42-720Z.yml
-  - screenshot-game-768.png
+  - design-preview-A.html
   - src/screens/SetupScreen.tsx
-  - screenshot-game-768-v2.png
-  - src/vite-env.d.ts
-  - tsconfig.json
-  - vite.config.ts
-  - .playwright-mcp/page-2026-06-20T07-31-39-557Z.yml
-  - screenshot-gameover.png
-  - tailwind.config.ts
-  - .playwright-mcp/page-2026-06-20T07-35-54-823Z.yml
-  - src/main.tsx
+  - src/i18n/strings.ts
+  - src/components/CourtDiagramInput.tsx
+  - design-preview-B.html
 -->
 
 ---
@@ -492,3 +442,30 @@ code:
 tests:
   - src/core/doubles/DoublesGame.test.ts
 -->
+
+---
+### Requirement: Input mode toggle control in Doubles
+
+The Setup screen SHALL display a segmented toggle control ("表單" / "球場圖" in zh-TW; "Form" / "Court" in en) in Doubles mode, placed between the game mode selector and the team/player input area. This toggle SHALL control whether form mode or court diagram mode is used for team and player name entry.
+
+#### Scenario: Toggle appears only in Doubles mode
+
+- **WHEN** the operator selects Doubles mode
+- **THEN** the input mode toggle SHALL be visible
+
+- **WHEN** the operator selects Singles mode
+- **THEN** the input mode toggle SHALL NOT be visible
+
+
+<!-- @trace
+source: setup-screen-court-diagram-mode
+updated: 2026-07-05
+code:
+  - design-preview-A.html
+  - src/screens/SetupScreen.tsx
+  - src/i18n/strings.ts
+  - src/components/CourtDiagramInput.tsx
+  - design-preview-B.html
+-->
+
+---

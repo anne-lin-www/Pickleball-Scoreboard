@@ -1,10 +1,4 @@
-# setup-form-state Specification
-
-## Purpose
-
-TBD - created by archiving change 'ui-setup-screen-wiring'. Update Purpose after archive.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Games count selection
 
@@ -37,14 +31,3 @@ The Setup screen SHALL provide a control allowing the operator to select the num
 |-----------|------------------------|
 | 1 game    | 1                      |
 | Best of 3 | 3                      |
-
-<!-- @trace
-source: setup-screen-court-diagram-mode
-updated: 2026-07-05
-code:
-  - design-preview-A.html
-  - src/screens/SetupScreen.tsx
-  - src/i18n/strings.ts
-  - src/components/CourtDiagramInput.tsx
-  - design-preview-B.html
--->

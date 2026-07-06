@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { ThemeProvider } from './theme/ThemeContext'
 import { LocaleProvider } from './i18n/LocaleContext'
 import SetupScreen, { type SetupConfig } from './screens/SetupScreen'
+import MidGameSetupScreen from './screens/MidGameSetupScreen'
 import GameScreen from './screens/GameScreen'
 import GameOverScreen from './screens/GameOverScreen'
 import { ResumeDialog } from './components/ResumeDialog'
@@ -10,7 +11,7 @@ import { DoublesGame } from './core/doubles/DoublesGame'
 import { SinglesGame } from './core/singles/SinglesGame'
 import { useGamePersistence, type PersistedGameState } from './hooks/useGamePersistence'
 
-type Screen = 'setup' | 'game' | 'game-over'
+type Screen = 'setup' | 'mid-game-setup' | 'game' | 'game-over'
 
 function rehydrateGame(persisted: PersistedGameState): DoublesGame | SinglesGame {
   return persisted.game.type === 'singles'
@@ -52,6 +53,22 @@ export default function App() {
     markSessionActive()
   }
 
+  function handleGoToMidGameSetup() {
+    setScreen('mid-game-setup')
+  }
+
+  function handleBackFromMidGame() {
+    setScreen('setup')
+  }
+
+  function handleMidGameStart(cfg: SetupConfig, g: DoublesGame | SinglesGame) {
+    setConfig(cfg)
+    setGame(g)
+    setScreen('game')
+    markSessionActive()
+    saveGameState(cfg, g)
+  }
+
   function handleReset(winnerName: string) {
     setWinner(winnerName)
     setScreen('game-over')
@@ -79,7 +96,10 @@ export default function App() {
   return (
     <ThemeProvider>
       <LocaleProvider>
-        {screen === 'setup' && <SetupScreen onStart={handleStart} />}
+        {screen === 'setup' && <SetupScreen onStart={handleStart} onMidGame={handleGoToMidGameSetup} />}
+        {screen === 'mid-game-setup' && (
+          <MidGameSetupScreen onBack={handleBackFromMidGame} onStart={handleMidGameStart} />
+        )}
         {screen === 'game' && config !== null && game !== null && (
           <GameScreen game={game} config={config} onReset={handleReset} />
         )}
